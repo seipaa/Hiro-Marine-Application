@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15" style="-fx-padding: 20; -fx-background-color: white;" 
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="controllers.ChallengeAdminController">
+
+    <Label text="Challenge Management" style="-fx-font-size: 24px; -fx-font-weight: bold"/>
+
+    <!-- Tab Panel untuk memisahkan Verifikasi dan Manajemen Challenge -->
+    <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <!-- Tab Verifikasi Challenge -->
+        <Tab text="Verifikasi Challenge">
+            <VBox spacing="10">
+                <!-- Search dan Filter -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="challengeFilterCombo" promptText="Filter Challenge"/>
+                    <TextField fx:id="userSearchField" promptText="Cari user..." prefWidth="200"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="+ Tambah Challenge" onAction="#showAddChallengeForm"
+                            style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+                    <Button text="Refresh" onAction="#refreshVerificationTable"
+                            style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+                </HBox>
+
+                <!-- Tabel Verifikasi -->
+                <TableView fx:id="verificationTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="userColumn" text="User" prefWidth="150"/>
+                        <TableColumn fx:id="userPointsColumn" text="Current Points" prefWidth="100"/>
+                        <TableColumn fx:id="challengeColumn" text="Challenge" prefWidth="200"/>
+                        <TableColumn fx:id="challengePointsColumn" text="Challenge Points" prefWidth="100"/>
+                        <TableColumn fx:id="verifyColumn" text="Action" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+
+        <!-- Tab Kelola Challenge -->
+        <Tab text="Kelola Challenge">
+            <SplitPane dividerPositions="0.6" VBox.vgrow="ALWAYS">
+                <!-- Tabel Challenge -->
+                <VBox spacing="10">
+                    <TextField fx:id="challengeSearchField" promptText="Cari challenge..." prefWidth="200"/>
+                    <TableView fx:id="challengeTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="challengeIdColumn" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="challengeTitleColumn" text="Title" prefWidth="200"/>
+                            <TableColumn fx:id="challengePointValueColumn" text="Points" prefWidth="100"/>
+                            <TableColumn fx:id="startDateColumn" text="Tanggal Mulai" prefWidth="120"/>
+                            <TableColumn fx:id="endDateColumn" text="Tanggal Selesai" prefWidth="120"/>
+                            <TableColumn fx:id="challengeActionsColumn" text="Actions" prefWidth="150"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+
+                <!-- Form Challenge -->
+                <VBox spacing="10" style="-fx-padding: 10;">
+                    <Label text="Detail Challenge" style="-fx-font-size: 18px; -fx-font-weight: bold"/>
+                    
+                    <Label text="Judul Challenge:"/>
+                    <TextField fx:id="challengeNameField"/>
+                    
+                    <Label text="Deskripsi:"/>
+                    <TextArea fx:id="challengeDescriptionField" prefRowCount="3" wrapText="true"/>
+                    
+                    <Label text="Points:"/>
+                    <TextField fx:id="pointsField"/>
+                    
+                    <Label text="Tanggal Mulai:"/>
+                    <DatePicker fx:id="startDatePicker" promptText="Pilih tanggal mulai"/>
+                    
+                    <Label text="Tanggal Selesai:"/>
+                    <DatePicker fx:id="endDatePicker" promptText="Pilih tanggal selesai"/>
+                    
+                    <Label text="Poster URL:"/>
+                    <HBox spacing="5">
+                        <TextField fx:id="imageUrlField" HBox.hgrow="ALWAYS"/>
+                        <Button text="Browse" onAction="#browseImage"/>
+                    </HBox>
+                    
+                    <Region VBox.vgrow="ALWAYS"/>
+                    
+                    <HBox spacing="10" alignment="CENTER">
+                        <Button text="Simpan" onAction="#saveChallenge"
+                                style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+                        <Button text="Reset" onAction="#resetForm"
+                                style="-fx-background-color: #9E9E9E; -fx-text-fill: white;"/>
+                    </HBox>
+                </VBox>
+            </SplitPane>
+        </Tab>
+    </TabPane>
+</VBox>

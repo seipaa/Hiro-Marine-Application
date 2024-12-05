@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Rectangle?>
+
+<Pane prefHeight="400.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RecommendationAdminController">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="400.0" stroke="BLACK" strokeType="INSIDE" width="300.0" />
+      <TextField fx:id="locationNameField" layoutX="26.0" layoutY="64.0" promptText="Location Name" />
+      <TextField fx:id="descriptionField" layoutX="26.0" layoutY="97.0" promptText="Description" />
+      <TextField fx:id="imageUrlField" layoutX="26.0" layoutY="130.0" promptText="Image URL" />
+      <TextField fx:id="ratingField" layoutX="26.0" layoutY="163.0" promptText="Rating (0-5)" />
+      <Button layoutX="63.0" layoutY="240.0" onAction="#addRecommendation" text="Add Recommendation" />
+      <Button layoutX="55.0" layoutY="280.0" onAction="#updateRecommendation" text="Update Recommendation" />
+      <Button layoutX="59.0" layoutY="320.0" onAction="#deleteRecommendation" text="Delete Recommendation" />
+      <Label layoutX="13.0" layoutY="18.0" prefHeight="30.0" prefWidth="274.0" style="-fx-font-size: 20px;" text="Recommendation Admin Panel" textFill="WHITE" />
+   </children>
+</Pane>

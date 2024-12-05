@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Rectangle?>
+
+<Pane prefHeight="258.0" prefWidth="196.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.NewsAdminController">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="258.0" stroke="BLACK" strokeType="INSIDE" width="196.0" />
+      <TextField fx:id="newsTitleField" layoutX="26.0" layoutY="64.0" promptText="News Title" />
+      <TextField fx:id="newsDescriptionField" layoutX="26.0" layoutY="97.0" promptText="News Description" />
+      <Button layoutX="63.0" layoutY="134.0" onAction="#addNews" text="Add News" />
+      <Button layoutX="55.0" layoutY="169.0" onAction="#updateNews" text="Update News" />
+      <Button layoutX="59.0" layoutY="204.0" onAction="#deleteNews" text="Delete News" />
+      <Label layoutX="13.0" layoutY="18.0" prefHeight="30.0" prefWidth="174.0" style="-fx-font-size: 20px;" text="News Admin Panel" textFill="WHITE" />
+   </children>
+</Pane>

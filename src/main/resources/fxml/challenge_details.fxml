@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<HBox prefHeight="600" prefWidth="800" spacing="15" style="-fx-padding: 15; -fx-background-color: linear-gradient(to bottom right, #1a4e6e, #2a9d8f);" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ChallengeDetailsController">
+
+    <!-- Panel Kiri -->
+    <VBox alignment="TOP_LEFT" prefWidth="380" spacing="12" style="-fx-background-color: rgba(255,255,255,0.95); -fx-padding: 15; -fx-background-radius: 12;                  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 4);">
+        
+        <!-- Header Challenge dengan Icon -->
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <ImageView fitHeight="32" fitWidth="32">
+                <Image url="@../images/challenge_icon.png" />
+            </ImageView>
+            <Label fx:id="challengeTitle" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a4e6e;" />
+        </HBox>
+        
+        <!-- Points Badge -->
+        <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #e3f2fd; -fx-padding: 8; -fx-background-radius: 6;">
+            <ImageView fitHeight="20" fitWidth="20">
+                <Image url="@../images/points_icon.png" />
+            </ImageView>
+            <Label fx:id="challengePoints" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1976d2;" />
+        </HBox>
+
+        <!-- Gambar Challenge dengan Frame -->
+        <VBox alignment="CENTER" spacing="8" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 8;                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);">
+            <ImageView fx:id="challengeImage" fitHeight="180.0" fitWidth="320.0" preserveRatio="true" />
+            <Label style="-fx-text-fill: #666666; -fx-font-style: italic; -fx-font-size: 11px;" text="Challenge Image" />
+        </VBox>
+
+        <!-- Deskripsi Challenge dengan Card Style -->
+        <VBox spacing="8" style="-fx-background-color: #f8f9fa; -fx-padding: 12; -fx-background-radius: 8;                                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <ImageView fitHeight="20" fitWidth="20">
+                    <Image url="@../images/info_icon.png" />
+                </ImageView>
+                <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2a9d8f;" text="Tentang Challenge" />
+            </HBox>
+            <Text fx:id="challengeDescription" style="-fx-fill: #495057; -fx-font-size: 13px;" wrappingWidth="300" />
+        </VBox>
+
+        <!-- QR Code Section -->
+        <VBox alignment="CENTER" spacing="8" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 8;                      -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-border-width: 1;">
+            <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a4e6e;" text="Scan QR Code untuk Verifikasi" />
+            <ImageView fx:id="qrCodeImage" fitHeight="120.0" fitWidth="120.0" style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);" />
+            <Label style="-fx-text-fill: #666666; -fx-font-style: italic; -fx-font-size: 11px;" text="Tunjukkan QR Code ini kepada petugas untuk verifikasi" textAlignment="CENTER" wrapText="true" />
+               
+            <!-- Tombol tutup di tengah bawah QR code -->
+            <HBox alignment="CENTER" style="-fx-padding: 10 0 0 0;" />
+        </VBox>
+    </VBox>
+
+    <!-- Panel Kanan - Komentar -->
+    <VBox alignment="TOP_RIGHT" prefWidth="380" spacing="12" style="-fx-background-color: rgba(255,255,255,0.95); -fx-padding: 15; -fx-background-radius: 12;                  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 4);">
+        
+        <!-- Header Komentar dengan Icon -->
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <ImageView fitHeight="24" fitWidth="24">
+                <Image url="@../images/comment_icon.png" />
+            </ImageView>
+            <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a4e6e;" text="Diskusi Challenge" />
+        </HBox>
+        
+        <!-- Area Komentar dengan Background -->
+        <ScrollPane fx:id="commentScrollPane" fitToWidth="true" prefHeight="400.0" style="-fx-background-color: transparent; -fx-background: transparent;                           -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-background-radius: 8;">
+            <content>
+                <VBox fx:id="commentContainer" spacing="8" style="-fx-background-color: transparent; -fx-padding: 8;" />
+            </content>
+        </ScrollPane>
+        
+        <!-- Area input komentar -->
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <TextArea fx:id="commentArea" promptText="Bagikan pendapat Anda tentang challenge ini..." styleClass="comment-area" />
+                      
+            <HBox alignment="CENTER" spacing="10">
+                <Button fx:id="submitCommentButton" onAction="#submitComment" styleClass="comment-button" text="Kirim Komentar" />
+            </HBox>
+        </VBox>
+
+        <!-- Tombol tutup di tengah -->
+        <HBox alignment="CENTER" />
+    </VBox>
+</HBox>

@@ -1,0 +1,44 @@
+.root {
+    -fx-background-color: black;
+}
+
+/* Style untuk ImageView background */
+.background-image {
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+/* Style untuk overlay */
+.background-overlay {
+    -fx-fill: linear-gradient(to bottom, rgba(26,34,56,0.85), rgba(26,34,56,0.95));
+}
+
+/* Tambahkan style untuk area komentar */
+.comment-area {
+    -fx-pref-height: 60px; /* Mengecilkan tinggi area input komentar */
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.comment-button {
+    -fx-background-color: #2a9d8f;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+    -fx-margin-top: 10px;
+}
+
+.close-button {
+    -fx-background-color: #2a9d8f;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8 30;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+    -fx-margin-top: 5px;
+} 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" alignment="CENTER" prefWidth="800" prefHeight="600"
+      style="-fx-padding: 20; -fx-background-color: white;"
+      xmlns="http://javafx.com/javafx/17" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="controllers.UserAdminController">
+    
+    <Label text="User Management" style="-fx-font-size: 24px; -fx-font-weight: bold"/>
+    
+    <HBox spacing="10" alignment="CENTER">
+        <ComboBox fx:id="statusFilter" promptText="Filter Status"/>
+        <TextField fx:id="searchField" promptText="Search users..."/>
+    </HBox>
+    
+    <TableView fx:id="userTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="usernameColumn" text="Username" prefWidth="100"/>
+            <TableColumn fx:id="nameColumn" text="Name" prefWidth="100"/>
+            <TableColumn fx:id="pointsColumn" text="Points" prefWidth="80"/>
+            <TableColumn fx:id="statusColumn" text="Status" prefWidth="80"/>
+            <TableColumn fx:id="joinDateColumn" text="Join Date" prefWidth="150"/>
+            <TableColumn fx:id="actionColumn" text="Actions" prefWidth="150"/>
+        </columns>
+    </TableView>
+    
+    <Button text="Refresh" onAction="#refreshTable" 
+            style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+    
+</VBox> 

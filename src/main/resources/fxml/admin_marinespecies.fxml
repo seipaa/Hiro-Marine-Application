@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Rectangle?>
+
+<Pane prefHeight="300.0" prefWidth="250.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MarineSpeciesAdminController">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="300.0" stroke="BLACK" strokeType="INSIDE" width="250.0" />
+      <TextField fx:id="speciesNameField" layoutX="26.0" layoutY="64.0" promptText="Species Name" />
+      <TextField fx:id="speciesDescriptionField" layoutX="26.0" layoutY="97.0" promptText="Species Description" />
+      <TextField fx:id="speciesImageUrlField" layoutX="26.0" layoutY="130.0" promptText="Image URL" />
+      <Button layoutX="63.0" layoutY="170.0" onAction="#addMarineSpecies" text="Add Species" />
+      <Button layoutX="55.0" layoutY="205.0" onAction="#updateMarineSpecies" text="Update Species" />
+      <Button layoutX="59.0" layoutY="240.0" onAction="#deleteMarineSpecies" text="Delete Species" />
+      <Label layoutX="13.0" layoutY="18.0" prefHeight="30.0" prefWidth="224.0" style="-fx-font-size: 20px;" text="Marine Species Admin Panel" textFill="WHITE" />
+   </children>
+</Pane>
