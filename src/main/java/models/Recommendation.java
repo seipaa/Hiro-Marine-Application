@@ -6,6 +6,7 @@ public class Recommendation {
     private String description;
     private String imageUrl;
     private double rating;
+    private String category;
 
     public Recommendation(int id, String locationName, String description, String imageUrl, double rating) {
         this.id = id;
