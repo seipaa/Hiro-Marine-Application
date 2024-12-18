@@ -6,50 +6,53 @@
 
 <VBox spacing="10" alignment="CENTER" prefWidth="400" prefHeight="600"
       style="-fx-padding: 20; -fx-background-color: white;"
-      xmlns="http://javafx.com/javafx/17" 
-      xmlns:fx="http://javafx.com/fxml/1" 
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controllers.UserProfileController">
-    
+
     <Label text="User Profile" style="-fx-font-size: 24px; -fx-font-weight: bold"/>
-    
+
     <Label fx:id="usernameLabel" style="-fx-font-size: 16px; -fx-font-weight: bold"/>
     <Label fx:id="totalPointsLabel" style="-fx-font-size: 14px; -fx-text-fill: #2196F3;"/>
     <Label fx:id="joinDateLabel" style="-fx-font-size: 12px; -fx-text-fill: #757575;"/>
-    
+
     <TabPane VBox.vgrow="ALWAYS" style="-fx-padding: 10 0;">
         <Tab text="Profile" closable="false">
             <VBox spacing="5">
                 <Label text="Nama Panggilan:"/>
                 <TextField fx:id="nicknameField"/>
-                
+
+                <Label text="Jenis Kelamin:"/>
+                <ComboBox fx:id="genderComboBox" prefWidth="150"/>
+
                 <Label text="Usia:"/>
                 <TextField fx:id="ageField"/>
-                
+
                 <Label text="Email:"/>
                 <TextField fx:id="emailField"/>
-                
+
                 <Label text="Instagram:"/>
                 <TextField fx:id="instagramField"/>
-                
+
                 <Label text="Twitter:"/>
                 <TextField fx:id="twitterField"/>
-                
+
                 <Label text="Bio:"/>
                 <TextArea fx:id="bioField" prefRowCount="3"/>
-                
+
                 <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10 0;">
-                    <Button text="Save Changes" onAction="#saveChanges" 
+                    <Button text="Save Changes" onAction="#saveChanges"
                             style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
                     <Button text="Logout" onAction="#logout"
                             style="-fx-background-color: #f44336; -fx-text-fill: white;"/>
                 </HBox>
             </VBox>
         </Tab>
-        
+
         <Tab text="Completed Challenges" closable="false">
             <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
                 <VBox fx:id="completedChallengesContainer" spacing="10" style="-fx-padding: 10;"/>
             </ScrollPane>
         </Tab>
     </TabPane>
-</VBox> 
+</VBox>
