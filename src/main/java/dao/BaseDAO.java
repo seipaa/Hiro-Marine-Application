@@ -12,7 +12,7 @@ public class BaseDAO {
     private static final String DB_NAME = "hiros_marine";
     private static final String DB_HOST = "localhost";
     private static final String DB_USER = "root";
-    private static final String DB_PASS = "humility";
+    private static final String DB_PASS = "root";
 
     private static final Logger LOGGER = Logger.getLogger(BaseDAO.class.getName());
 
