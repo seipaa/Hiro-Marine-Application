@@ -112,103 +112,138 @@
                                 </content>
                             </Tab>
 
-                            <Tab text="RECOMMENDATION">
+                           <Tab text="RECOMMENDATION">
                                 <content>
                                     <AnchorPane prefHeight="200.0" prefWidth="200.0">
                                         <children>
                                             <AnchorPane layoutX="121.0" layoutY="2.0" minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" />
-                                            <ScrollPane fx:id="scrollPane" fitToHeight="true" fitToWidth="true" hbarPolicy="ALWAYS" layoutX="18.0" layoutY="31.0" prefHeight="218.0" prefWidth="790.0" style="-fx-background-color: transparent;" vbarPolicy="NEVER">
+                                            <ScrollPane fx:id="scrollPane" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="18.0" layoutY="31.0" prefHeight="534.0" prefWidth="874.0" style="-fx-background-color: transparent;" vbarPolicy="ALWAYS">
                                                 <content>
-                                                    <AnchorPane prefHeight="350" prefWidth="250" style="-fx-background-color: white; -fx-border-color: #ccc; -fx-border-radius: 10; -fx-background-radius: 10;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+                                                    <AnchorPane prefHeight="350" prefWidth="877.0" style="-fx-background-color: white; -fx-border-color: #ccc; -fx-border-radius: 10; -fx-background-radius: 10;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
                                                         <children>
-                                                            <HBox prefHeight="214.0" prefWidth="1154.0">
+                                                            <VBox prefHeight="638.0" prefWidth="867.0">
                                                                 <children>
-                                                                    <VBox alignment="CENTER" prefHeight="214.0" prefWidth="258.0" spacing="20.0">
+                                                                    <HBox prefHeight="200.0" prefWidth="542.0">
                                                                         <children>
-                                                                            <Label text="Pantai Pangandaran" />
-                                                                            <ImageView fx:id="cardImage" fitHeight="83.0" fitWidth="254.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
-                                                                                <image>
-                                                                                    <Image url="@../../../../../pangandaran.jpg" />
-                                                                                </image>
-                                                                            </ImageView>
-                                                                            <Button fx:id="discussionButton" contentDisplay="CENTER" prefHeight="34.0" prefWidth="157.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
-                                                                        </children>
-                                                                    </VBox>
-                                                                    <VBox alignment="CENTER" prefHeight="214.0" prefWidth="258.0" spacing="20.0">
-                                                                        <children>
-                                                                            <Label text="Pantai Anyer" />
-                                                                            <ImageView fx:id="cardImage1" fitHeight="83.0" fitWidth="254.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
-                                                                                <image>
-                                                                                    <Image url="@../../../../../anyer.jpg" />
-                                                                                </image>
-                                                                            </ImageView>
-                                                                            <Button fx:id="discussionButton1" contentDisplay="CENTER" prefHeight="34.0" prefWidth="144.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
-                                                                        </children>
-                                                                    </VBox>
-                                                                    <VBox alignment="CENTER" prefHeight="214.0" prefWidth="258.0" spacing="20.0">
-                                                                        <children>
-                                                                            <Label text="Pantai Carita" />
-                                                                            <ImageView fx:id="cardImage2" fitHeight="83.0" fitWidth="254.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
-                                                                                <image>
-                                                                                    <Image url="@../../../../../pantai-carita.jpeg" />
-                                                                                </image>
-                                                                            </ImageView>
-                                                                            <Button fx:id="discussionButton2" contentDisplay="CENTER" prefHeight="34.0" prefWidth="156.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
-                                                                        </children>
-                                                                    </VBox>
-                                                                    <VBox alignment="CENTER" prefHeight="214.0" prefWidth="258.0" spacing="20.0">
-                                                                        <children>
-                                                                            <Label text="Pantai Pangandaran" />
-                                                                            <ImageView fx:id="cardImage3" fitHeight="83.0" fitWidth="254.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
-                                                                                <image>
-                                                                                    <Image url="@../../../../../pangandaran.jpg" />
-                                                                                </image>
-                                                                            </ImageView>
-                                                                            <Button fx:id="discussionButton3" contentDisplay="CENTER" prefHeight="34.0" prefWidth="124.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
-                                                                        </children>
-                                                                    </VBox>
-                                                                </children>
-                                                            </HBox>
-                                                        </children>
-                                                    </AnchorPane>
-                                                </content>
-                                            </ScrollPane>
-                                            <ScrollPane fx:id="scrollPane2" hbarPolicy="NEVER" layoutX="19.0" layoutY="267.0" prefHeight="200.0" prefWidth="786.0" vbarPolicy="ALWAYS">
-                                                <content>
-                                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="785.0">
-                                                        <children>
-                                                            <VBox layoutX="1.0" layoutY="2.0" prefHeight="298.0" prefWidth="771.0">
-                                                                <children>
-                                                                    <HBox alignment="CENTER" prefHeight="212.0" prefWidth="771.0">
-                                                                        <children>
-                                                                            <ImageView fx:id="cardImage4" fitHeight="100.0" fitWidth="134.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
-                                                                                <image>
-                                                                                    <Image url="@../../../../../pangandaran.jpg" />
-                                                                                </image>
-                                                                            </ImageView>
-                                                                            <VBox alignment="TOP_CENTER" prefHeight="174.0" prefWidth="526.0">
+                                                                            <VBox alignment="CENTER" prefHeight="214.0" prefWidth="258.0" spacing="20.0">
                                                                                 <children>
                                                                                     <Label text="Pantai Pangandaran" />
-                                                                                    <TextArea prefHeight="85.0" prefWidth="527.0" text="Pantai pangandaran adalah salah satu pantai yang terkenal di jawa barat" />
-                                                                                    <TextField alignment="CENTER" prefHeight="31.0" prefWidth="526.0" promptText="Comment">
-                                                                                        <cursor>
-                                                                                            <Cursor fx:constant="HAND" />
-                                                                                        </cursor>
-                                                                                    </TextField>
-                                                                                    <Button minHeight="0.0" mnemonicParsing="false" prefHeight="43.0" prefWidth="58.0" text="Submit" />
+                                                                                    <ImageView fx:id="cardImage" fitHeight="83.0" fitWidth="254.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
+                                                                                        <image>
+                                                                                            <Image url="@../../../../../pangandaran.jpg" />
+                                                                                        </image>
+                                                                                    </ImageView>
+                                                                                    <Button fx:id="discussionButton" contentDisplay="CENTER" onAction="#handleDiscussionButtonClick" prefHeight="34.0" prefWidth="157.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
+                                                                                </children>
+                                                                            </VBox>
+                                                                            <VBox alignment="CENTER" prefHeight="242.0" prefWidth="325.0" spacing="20.0">
+                                                                                <children>
+                                                                                    <Label text="Pantai Anyer" />
+                                                                                    <ImageView fx:id="cardImage1" fitHeight="83.0" fitWidth="162.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
+                                                                                        <image>
+                                                                                            <Image url="@../../../../../anyer.jpg" />
+                                                                                        </image>
+                                                                                    </ImageView>
+                                                                                    <Button fx:id="discussionButton1" contentDisplay="CENTER" onAction="#handleDiscussionButtonClick" prefHeight="34.0" prefWidth="144.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
+                                                                                </children>
+                                                                            </VBox>
+                                                                            <VBox alignment="CENTER" prefHeight="312.0" prefWidth="258.0" spacing="20.0">
+                                                                                <children>
+                                                                                    <Label text="Pantai Carita" />
+                                                                                    <ImageView fx:id="cardImage2" fitHeight="83.0" fitWidth="254.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
+                                                                                        <image>
+                                                                                            <Image url="@../../../../../pantai-carita.jpeg" />
+                                                                                        </image>
+                                                                                    </ImageView>
+                                                                                    <Button fx:id="discussionButton2" contentDisplay="CENTER" onAction="#handleDiscussionButtonClick" prefHeight="34.0" prefWidth="156.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
+                                                                                </children>
+                                                                            </VBox>
+                                                                        </children>
+                                                                    </HBox>
+                                                                    <HBox prefHeight="200.0" prefWidth="542.0">
+                                                                        <children>
+                                                                            <VBox alignment="CENTER" prefHeight="214.0" prefWidth="258.0" spacing="20.0">
+                                                                                <children>
+                                                                                    <Label text="Pantai Pangandaran" />
+                                                                                    <ImageView fx:id="cardImage1" fitHeight="83.0" fitWidth="254.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
+                                                                                        <image>
+                                                                                            <Image url="@../../../../../pangandaran.jpg" />
+                                                                                        </image>
+                                                                                    </ImageView>
+                                                                                    <Button fx:id="discussionButton11" contentDisplay="CENTER" onAction="#handleDiscussionButtonClick" prefHeight="34.0" prefWidth="157.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
+                                                                                </children>
+                                                                            </VBox>
+                                                                            <VBox alignment="CENTER" prefHeight="242.0" prefWidth="325.0" spacing="20.0">
+                                                                                <children>
+                                                                                    <Label text="Pantai Anyer" />
+                                                                                    <ImageView fx:id="cardImage11" fitHeight="83.0" fitWidth="162.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
+                                                                                        <image>
+                                                                                            <Image url="@../../../../../anyer.jpg" />
+                                                                                        </image>
+                                                                                    </ImageView>
+                                                                                    <Button fx:id="discussionButton11" contentDisplay="CENTER" onAction="#handleDiscussionButtonClick" prefHeight="34.0" prefWidth="144.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
+                                                                                </children>
+                                                                            </VBox>
+                                                                            <VBox alignment="CENTER" prefHeight="312.0" prefWidth="258.0" spacing="20.0">
+                                                                                <children>
+                                                                                    <Label text="Pantai Carita" />
+                                                                                    <ImageView fx:id="cardImage21" fitHeight="83.0" fitWidth="254.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
+                                                                                        <image>
+                                                                                            <Image url="@../../../../../pantai-carita.jpeg" />
+                                                                                        </image>
+                                                                                    </ImageView>
+                                                                                    <Button fx:id="discussionButton21" contentDisplay="CENTER" onAction="#handleDiscussionButtonClick" prefHeight="34.0" prefWidth="156.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
+                                                                                </children>
+                                                                            </VBox>
+                                                                        </children>
+                                                                    </HBox>
+                                                                    <HBox prefHeight="200.0" prefWidth="542.0">
+                                                                        <children>
+                                                                            <VBox alignment="CENTER" prefHeight="214.0" prefWidth="258.0" spacing="20.0">
+                                                                                <children>
+                                                                                    <Label text="Pantai Pangandaran" />
+                                                                                    <ImageView fx:id="cardImage1" fitHeight="83.0" fitWidth="254.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
+                                                                                        <image>
+                                                                                            <Image url="@../../../../../pangandaran.jpg" />
+                                                                                        </image>
+                                                                                    </ImageView>
+                                                                                    <Button fx:id="discussionButton111" contentDisplay="CENTER" onAction="#handleDiscussionButtonClick" prefHeight="34.0" prefWidth="157.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
+                                                                                </children>
+                                                                            </VBox>
+                                                                            <VBox alignment="CENTER" prefHeight="242.0" prefWidth="325.0" spacing="20.0">
+                                                                                <children>
+                                                                                    <Label text="Pantai Anyer" />
+                                                                                    <ImageView fx:id="cardImage12" fitHeight="83.0" fitWidth="162.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
+                                                                                        <image>
+                                                                                            <Image url="@../../../../../anyer.jpg" />
+                                                                                        </image>
+                                                                                    </ImageView>
+                                                                                    <Button fx:id="discussionButton12" contentDisplay="CENTER" onAction="#handleDiscussionButtonClick" prefHeight="34.0" prefWidth="144.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
+                                                                                </children>
+                                                                            </VBox>
+                                                                            <VBox alignment="CENTER" prefHeight="312.0" prefWidth="258.0" spacing="20.0">
+                                                                                <children>
+                                                                                    <Label text="Pantai Carita" />
+                                                                                    <ImageView fx:id="cardImage22" fitHeight="83.0" fitWidth="254.0" preserveRatio="true" style="-fx-background-color: #f0f0f0;">
+                                                                                        <image>
+                                                                                            <Image url="@../../../../../pantai-carita.jpeg" />
+                                                                                        </image>
+                                                                                    </ImageView>
+                                                                                    <Button fx:id="discussionButton22" contentDisplay="CENTER" onAction="#handleDiscussionButtonClick" prefHeight="34.0" prefWidth="156.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-border-radius: 5; -fx-background-radius: 5;" text="Diskusi Rekomendasi" />
                                                                                 </children>
                                                                             </VBox>
                                                                         </children>
                                                                     </HBox>
                                                                 </children>
                                                             </VBox>
-                                                        </children></AnchorPane>
+                                                        </children>
+                                                    </AnchorPane>
                                                 </content>
                                             </ScrollPane>
                                         </children>
                                     </AnchorPane>
                                 </content>
-                            </Tab>
+                                </Tab>
                             <Tab text="CHALLENGE">
                                 <content>
                                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="460.0" prefWidth="811.0">
