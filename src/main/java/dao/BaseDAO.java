@@ -10,15 +10,15 @@ public class BaseDAO {
 
     // Konfigurasi database
     private static final String DB_NAME = "hiros_marine";
-    private static final String DB_HOST = "localhost";
-    private static final String DB_USER = "root";
-    private static final String DB_PASS = "root";
+    private static final String DB_HOST = "34.44.81.201";
+    private static final String DB_USER = "hiro";
+    private static final String DB_PASS = "hiro";
 
     private static final Logger LOGGER = Logger.getLogger(BaseDAO.class.getName());
 
     // Proses mendapatkan koneksi ke database
     protected Connection getConnection() throws SQLException {
-        String url = "jdbc:mysql://" + DB_HOST + ":3300/" + DB_NAME + "?useUnicode=true&characterEncoding=UTF-8";
+        String url = "jdbc:mysql://" + DB_HOST + ":3306/" + DB_NAME + "?useUnicode=true&characterEncoding=UTF-8";
         String user = DB_USER;
         String password = DB_PASS;
         // Mengembalikan objek Connection
