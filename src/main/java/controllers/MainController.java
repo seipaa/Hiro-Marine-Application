@@ -113,6 +113,22 @@ public class MainController {
     private ScrollPane newsScrollPane;
     @FXML
     private VBox newsContainer;
+    @FXML
+    private Button discussionButton;
+    @FXML
+    private Button discussionButton1;
+    @FXML
+    private Button discussionButton2;
+    @FXML
+    private Button discussionButton11;
+    @FXML
+    private Button discussionButton21;
+    @FXML
+    private Button discussionButton12;
+    @FXML
+    private Button discussionButton22;
+    @FXML
+    private Button discussionButton111;
 
     private User currentUser;
     private Admin currentAdmin;
@@ -271,6 +287,35 @@ public class MainController {
                 });
             }
         });
+    }
+
+    @FXML
+    private void handleDiscussionButtonClick(ActionEvent event) {
+        Button sourceButton = (Button) event.getSource();
+        String locationName;
+        
+        // Tentukan lokasi berdasarkan fx:id button
+        switch (sourceButton.getId()) {
+            case "discussionButton":
+            case "discussionButton111":
+                locationName = "Pantai Pangandaran";
+                break;
+            case "discussionButton1":
+            case "discussionButton11":
+            case "discussionButton12":
+                locationName = "Pantai Anyer";
+                break;
+            case "discussionButton2":
+            case "discussionButton21":
+            case "discussionButton22":
+                locationName = "Pantai Carita";
+                break;
+            default:
+                locationName = "Unknown Location";
+                break;
+        }
+        
+        openDiscussion(locationName);
     }
 
     private void displayNews() {
@@ -978,5 +1023,31 @@ public class MainController {
         card.getChildren().addAll(background, titleLabel);
         
         return card;
+    }
+
+    public void refreshRecommendations() {
+    }
+
+    @FXML
+    private void openDiscussion(String locationName) {
+        try {
+            System.out.println("Opening discussion for: " + locationName);
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/recomDiscuss.fxml"));
+            Parent root = loader.load();
+
+            DiscussionController controller = loader.getController();
+            controller.setLocationInfo(locationName);
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Diskusi " + locationName);
+            stage.setScene(new Scene(root));
+            stage.show();
+            
+        } catch (IOException e) {
+            System.err.println("Error opening discussion window: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

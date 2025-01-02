@@ -29,13 +29,8 @@ public class LoginController {
     @FXML
     private PasswordField passwordField;
 
-    private MainController mainController;
     private AdminDAO adminDAO = new AdminDAO();
     private UserDAO userDAO = new UserDAO();
-
-    public void setMainController(MainController mainController) {
-        this.mainController = mainController;
-    }
 
     @FXML
     private void handleLogin() {
@@ -43,15 +38,15 @@ public class LoginController {
         String password = passwordField.getText();
 
         if (username.isEmpty() || password.isEmpty()) {
-            AlertUtils.showError("Error", "Please enter both username and password");
+            AlertUtils.showError("Error", "Silakan masukkan username dan password");
             return;
         }
 
         try {
-            // Coba login sebagai admin dulu
+            // Coba login sebagai admin terlebih dahulu
             Admin admin = adminDAO.getAdminByUsernameAndPassword(username, password);
             if (admin != null) {
-                System.out.println("Admin login successful: " + admin.getName());
+                System.out.println("Admin login berhasil: " + admin.getName());
                 loadMainScreen(null, admin);
                 return;
             }
@@ -59,16 +54,19 @@ public class LoginController {
             // Kalau bukan admin, coba login sebagai user
             User user = userDAO.getUserByUsernameAndPassword(username, password);
             if (user != null) {
-                System.out.println("User login successful: " + user.getName());
+                if ("FROZEN".equals(user.getStatus())) {
+                    AlertUtils.showError("Login Gagal", "Akun Anda telah dibekukan.");
+                    return;
+                }
+                System.out.println("User login berhasil: " + user.getName());
                 loadMainScreen(user, null);
                 return;
             }
 
             // Kalau keduanya gagal
-            AlertUtils.showError("Login Failed", "Invalid username or password");
-            
+            AlertUtils.showError("Login Gagal", "Username atau password tidak valid");
         } catch (Exception e) {
-            AlertUtils.showError("Error", "Failed to login: " + e.getMessage());
+            AlertUtils.showError("Error", "Gagal login: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -76,7 +74,7 @@ public class LoginController {
     private void loadMainScreen(User user, Admin admin) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Main.fxml"));
         Parent root = loader.load();
-        
+
         MainController mainController = loader.getController();
         if (user != null) {
             mainController.setCurrentUser(user);
@@ -85,7 +83,7 @@ public class LoginController {
             mainController.setCurrentAdmin(admin);
             mainController.setAdmin(true);
         }
-        
+
         Stage stage = (Stage) usernameField.getScene().getWindow();
         stage.setScene(new Scene(root));
         stage.show();
@@ -98,37 +96,13 @@ public class LoginController {
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (IOException e) {
-            showError("Error", "Gagal memuat tampilan registrasi.");
+            AlertUtils.showError("Error", "Gagal memuat tampilan registrasi.");
         }
     }
 
-    private void goToMain() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Main.fxml"));
-            Parent root = loader.load();
-            MainController loadedMainController = loader.getController();
-            loadedMainController.setAdmin(mainController.isAdmin());
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            showError("Error", "Gagal memuat tampilan utama.");
-        }
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void showError(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    @FXML
+    private void exitApplication() {
+        Platform.exit();
     }
 
     private boolean isAdmin(String username, String password) {
@@ -140,13 +114,8 @@ public class LoginController {
             ResultSet resultSet = preparedStatement.executeQuery();
             return resultSet.next();
         } catch (SQLException e) {
-            showError("Error", "Terjadi kesalahan saat memeriksa admin: " + e.getMessage());
+            AlertUtils.showError("Error", "Terjadi kesalahan saat memeriksa admin: " + e.getMessage());
             return false;
         }
-    }
-
-    @FXML
-    private void exitApplication() {
-        Platform.exit();
     }
 }
