@@ -1,19 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.shape.Rectangle?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<Pane prefHeight="258.0" prefWidth="196.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.NewsAdminController">
-   <children>
-      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="258.0" stroke="BLACK" strokeType="INSIDE" width="196.0" />
-      <TextField fx:id="newsTitleField" layoutX="26.0" layoutY="64.0" promptText="News Title" />
-      <TextField fx:id="newsDescriptionField" layoutX="26.0" layoutY="97.0" promptText="News Description" />
-      <Button layoutX="63.0" layoutY="134.0" onAction="#addNews" text="Add News" />
-      <Button layoutX="55.0" layoutY="169.0" onAction="#updateNews" text="Update News" />
-      <Button layoutX="59.0" layoutY="204.0" onAction="#deleteNews" text="Delete News" />
-      <Label layoutX="13.0" layoutY="18.0" prefHeight="30.0" prefWidth="174.0" style="-fx-font-size: 20px;" text="News Admin Panel" textFill="WHITE" />
-   </children>
-</Pane>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/22" fx:controller="controllers.NewsAdminController" styleClass="root">
+   <padding>
+      <Insets top="20" right="20" bottom="20" left="20"/>
+   </padding>
+   <top>
+      <VBox spacing="20" alignment="CENTER">
+         <Label text="Manajemen Berita" style="-fx-font-size: 24; -fx-font-weight: bold;">
+            <font>
+               <Font size="24.0" />
+            </font>
+         </Label>
+         <HBox spacing="10" alignment="CENTER">
+            <TextField fx:id="searchField" prefWidth="300" promptText="Cari berita..."/>
+            <Button text="Cari" onAction="#handleSearch" styleClass="button-primary"/>
+            <Button text="Reset" onAction="#handleReset" styleClass="button-secondary"/>
+         </HBox>
+      </VBox>
+   </top>
+   <left>
+      <VBox spacing="15" minWidth="300" styleClass="news-card">
+         <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+         </padding>
+         <Label text="Form Berita" style="-fx-font-size: 18; -fx-font-weight: bold;">
+            <font>
+               <Font size="18.0" />
+            </font>
+         </Label>
+         <Label text="Judul Berita" />
+         <TextField fx:id="titleField" promptText="Masukkan judul berita"/>
+         <Label text="Deskripsi" />
+         <TextArea fx:id="descriptionField" promptText="Masukkan deskripsi berita" wrapText="true" prefRowCount="4"/>
+         <Label text="Gambar" />
+         <HBox spacing="10" alignment="CENTER">
+            <TextField fx:id="imageUrlField" promptText="URL Gambar" HBox.hgrow="ALWAYS"/>
+            <Button text="Pilih File" onAction="#handleChooseImage" styleClass="button-secondary"/>
+         </HBox>
+         <Label text="Admin" />
+         <ComboBox fx:id="adminIdComboBox" promptText="Pilih ID Admin" maxWidth="Infinity"/>
+         <Button fx:id="saveButton" text="Tambah Berita" maxWidth="Infinity" styleClass="button-primary"/>
+      </VBox>
+   </left>
+   <center>
+      <VBox spacing="10">
+         <padding>
+            <Insets top="20" right="0" bottom="20" left="20"/>
+         </padding>
+         <Label text="Daftar Berita" style="-fx-font-size: 18; -fx-font-weight: bold;">
+            <font>
+               <Font size="18.0" />
+            </font>
+         </Label>
+         <TableView fx:id="newsTableView" VBox.vgrow="ALWAYS">
+            <columns>
+               <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+               <TableColumn fx:id="titleColumn" text="Judul" prefWidth="200"/>
+               <TableColumn fx:id="descriptionColumn" text="Deskripsi" prefWidth="300"/>
+               <TableColumn fx:id="adminIdColumn" text="ID Admin" prefWidth="100"/>
+               <TableColumn fx:id="actionColumn" text="Aksi" prefWidth="100"/>
+            </columns>
+            <columnResizePolicy>
+               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+         </TableView>
+         <HBox spacing="10" alignment="CENTER">
+            <Pagination fx:id="pagination" maxPageIndicatorCount="5"/>
+         </HBox>
+      </VBox>
+   </center>
+</BorderPane>
