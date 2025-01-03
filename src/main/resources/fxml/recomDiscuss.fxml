@@ -4,52 +4,131 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Rectangle?>
-<?import javafx.scene.text.Text?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane prefHeight="547.0" prefWidth="539.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/22" fx:controller="com.example.DiscussionController">
-    <AnchorPane layoutX="25.0" layoutY="56.0" prefHeight="366.0" prefWidth="127.0">
-        <children>
-            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="366.0" layoutX="-6.0" stroke="BLACK" strokeType="INSIDE" width="138.0" />
-            <ImageView fitHeight="73.0" fitWidth="127.0" layoutX="8.0" layoutY="50.0" pickOnBounds="true" preserveRatio="true">
-                <image>
-                    <Image url="@../../../../../pangandaran.jpg" />
-                </image>
-            </ImageView>
-            <Label layoutX="14.0" layoutY="14.0" text="Pantai Pangandaran" />
-            <Text layoutX="9.0" layoutY="171.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Pantai Pangandaran adalah " wrappingWidth="106.39999999999998" />
-        </children>
-    </AnchorPane>
-    <ScrollPane hbarPolicy="NEVER" layoutX="163.0" layoutY="56.0" prefHeight="366.0" prefWidth="353.0" vbarPolicy="ALWAYS">
-        <content>
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="386.0" prefWidth="350.0">
-                <children>
-                    <VBox alignment="TOP_CENTER" layoutX="-1.0" prefHeight="438.0" prefWidth="340.0">
-                        <children>
-                            <HBox alignment="TOP_CENTER" prefHeight="154.0" prefWidth="340.0">
-                                <children>
-                                    <Label prefHeight="18.0" prefWidth="142.0" text="Label" />
-                                    <ImageView blendMode="SRC_ATOP" cache="true" fitHeight="100.0" fitWidth="133.0" pickOnBounds="true" preserveRatio="true">
-                                        <image>
-                                            <Image url="@../../../../../penyu.jpg" />
-                                        </image>
-                                    </ImageView>
-                                    <TextArea prefHeight="120.0" prefWidth="204.0" />
-                                </children>
-                            </HBox>
-                        </children>
-                    </VBox>
-                </children>
-            </AnchorPane>
-        </content>
-    </ScrollPane>
-    <Label contentDisplay="CENTER" layoutX="164.0" layoutY="32.0" text="Selamat datang di diskusi rekomendasi!" />
-    <TextField alignment="CENTER" layoutX="154.0" layoutY="470.0" prefHeight="26.0" prefWidth="261.0" promptText="Comment" />
-    <Button layoutX="259.0" layoutY="507.0" mnemonicParsing="false" text="Submit" />
+<AnchorPane fx:id="rootPane" prefHeight="600.0" prefWidth="800.0"
+            style="-fx-background-image: url('/images/discussbg.png');
+                   -fx-background-repeat: no-repeat;
+                   -fx-background-size: cover;
+                   -fx-background-position: center center;"
+            xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/22"
+            fx:controller="controllers.DiscussionController">
+
+    <HBox layoutX="14.0" layoutY="14.0" prefHeight="600.0" prefWidth="800.0" spacing="20">
+        <!-- Bagian Kiri: Detail Rekomendasi -->
+        <VBox fx:id="recommendationVBox" prefWidth="300.0" spacing="15"
+              style="-fx-background-color: rgba(255, 255, 255, 0.85);
+                     -fx-padding: 20;
+                     -fx-background-radius: 20;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 15, 0, 0, 0);
+                     -fx-border-color: rgba(165, 214, 220, 0.5);
+                     -fx-border-radius: 20;
+                     -fx-border-width: 2;">
+
+            <!-- Header Lokasi -->
+            <Label fx:id="locationLabel"
+                   style="-fx-font-size: 24px;
+                          -fx-font-weight: bold;
+                          -fx-text-fill: #1a2980;"/>
+
+            <!-- Deskripsi -->
+            <TextArea fx:id="recommendationDescription"
+                      editable="false"
+                      wrapText="true"
+                      prefHeight="150.0"
+                      style="-fx-background-color: rgba(255, 255, 255, 0.9);
+                             -fx-text-fill: #2c3e50;
+                             -fx-font-size: 14px;
+                             -fx-padding: 10;
+                             -fx-border-color: rgba(165, 214, 220, 0.7);
+                             -fx-border-radius: 12;
+                             -fx-background-radius: 12;"/>
+
+            <!-- Container untuk Image -->
+            <VBox style="-fx-background-color: rgba(248, 249, 250, 0.9);
+                        -fx-background-radius: 15;
+                        -fx-padding: 10;
+                        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 0);
+                        -fx-border-color: rgba(165, 214, 220, 0.7);
+                        -fx-border-radius: 15;
+                        -fx-border-width: 1;">
+                <ImageView fx:id="recommendationImage"
+                           fitHeight="250.0"
+                           fitWidth="300.0"
+                           pickOnBounds="true"
+                           preserveRatio="true"/>
+            </VBox>
+        </VBox>
+
+        <!-- Bagian Kanan: Area Diskusi -->
+        <VBox prefWidth="470.0" spacing="15">
+            <ScrollPane hbarPolicy="NEVER"
+                        prefHeight="450.0"
+                        prefWidth="470.0"
+                        vbarPolicy="ALWAYS"
+                        style="-fx-background: transparent;
+                              -fx-background-color: rgba(255, 255, 255, 0.6);">
+                <content>
+                    <VBox fx:id="discussionVBox"
+                          alignment="TOP_CENTER"
+                          spacing="15"
+                          prefWidth="450"
+                          style="-fx-padding: 10;"/>
+                </content>
+                <style>
+                    .scroll-pane > .viewport {
+                        -fx-background-color: transparent;
+                    }
+                    .scroll-bar:vertical {
+                        -fx-background-color: transparent;
+                    }
+                    .scroll-bar:vertical .thumb {
+                        -fx-background-color: rgba(165, 214, 220, 0.6);
+                        -fx-background-radius: 8;
+                    }
+                    .scroll-bar:vertical .thumb:hover {
+                        -fx-background-color: rgba(165, 214, 220, 0.8);
+                    }
+                </style>
+            </ScrollPane>
+
+            <!-- Input Komentar -->
+            <TextArea fx:id="descriptionArea"
+                      promptText="Tulis komentar Anda"
+                      prefHeight="80.0"
+                      prefWidth="470.0"
+                      style="-fx-background-color: rgba(255, 255, 255, 0.9);
+                             -fx-background-radius: 15;
+                             -fx-border-radius: 15;
+                             -fx-border-color: rgba(165, 214, 220, 0.7);
+                             -fx-text-fill: #2c3e50;
+                             -fx-prompt-text-fill: #95a5a6;"/>
+
+            <HBox alignment="CENTER" spacing="15">
+                <Button fx:id="uploadImageBtn"
+                        text="Unggah Gambar"
+                        style="-fx-background-color: #3498db;
+                               -fx-text-fill: white;
+                               -fx-font-size: 13px;
+                               -fx-font-weight: bold;
+                               -fx-padding: 12 25;
+                               -fx-background-radius: 25;
+                               -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 0);"/>
+                <Button fx:id="submitButton"
+                        text="Kirim Komentar"
+                        style="-fx-background-color: #2ecc71;
+                               -fx-text-fill: white;
+                               -fx-font-size: 13px;
+                               -fx-font-weight: bold;
+                               -fx-padding: 12 25;
+                               -fx-background-radius: 25;
+                               -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 0);"/>
+            </HBox>
+        </VBox>
+    </HBox>
 </AnchorPane>
