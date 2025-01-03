@@ -220,4 +220,5 @@ public class NewsAdminController {
         alert.setContentText(content);
         alert.showAndWait();
     }
+
 }
