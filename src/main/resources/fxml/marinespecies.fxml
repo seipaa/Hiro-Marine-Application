@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.effect.GaussianBlur?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<!-- <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?> -->
+
+<AnchorPane prefHeight="600.0" prefWidth="800.0" style="-fx-background-radius: 15;                     -fx-background-color: #1a2238;                    -fx-background-insets: 0;                    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 0);" stylesheets="@../styles/marinespecies.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MarineSpeciesController">
+    <children>
+        <!-- Background Image with Blur -->
+        <ImageView fitHeight="600.0" fitWidth="800.0" preserveRatio="false" style="-fx-background-radius: 15;">
+            <image>
+                <Image url="@../images/background.jpg" />
+            </image>
+            <effect>
+                <GaussianBlur radius="10" />
+            </effect>
+        </ImageView>
+
+        <!-- Semi-transparent overlay -->
+        <Rectangle arcHeight="30.0" arcWidth="30.0" fill="#1a2238" height="600.0" opacity="0.2" width="800.0" />
+
+        <!-- Content Container -->
+        <HBox prefHeight="494.0" prefWidth="800.0" spacing="30" style="-fx-padding: 40;">
+            <!-- Back Button -->
+            <Button fx:id="backButton" maxHeight="50.0" maxWidth="50.0" onAction="#handleBack" prefHeight="50.0" prefWidth="50.0" styleClass="back-button">
+                <!--
+                <graphic>
+                    <FontAwesomeIconView glyphName="ARROW_LEFT" 
+                                       size="24"
+                                       styleClass="back-button-icon"/>
+                </graphic> -->
+            </Button>
+
+            <!-- Left Side - Image -->
+            <VBox alignment="TOP_CENTER" prefWidth="300" spacing="20">
+                <ImageView fx:id="speciesImage" fitHeight="250.0" fitWidth="250.0" styleClass="species-image" />
+            </VBox>
+
+            <!-- Right Side - Information -->
+            <VBox prefWidth="400" spacing="5">
+                <Label fx:id="speciesName" styleClass="species-name" wrapText="true" />
+                <Label fx:id="speciesLatinName" styleClass="species-latin-name" wrapText="true" />
+                <Label fx:id="speciesType" styleClass="species-type-label" />
+            </VBox>
+        </HBox>
+
+        <!-- Description Text -->
+        <TextArea fx:id="speciesDescription" editable="false" layoutX="45.0" layoutY="314.0" prefHeight="241.0" prefWidth="723.0" styleClass="transparent-text-area" wrapText="true" />
+    </children>
+</AnchorPane>

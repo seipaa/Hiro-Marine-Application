@@ -1,0 +1,241 @@
+/* Import custom fonts */
+@font-face {
+    font-family: 'CreatoDisplay-Bold';
+    src: url('../fonts/CreatoDisplay-Bold.otf');
+}
+
+/* Styling untuk TextArea */
+.transparent-text-area {
+    -fx-text-fill: white;
+    -fx-font-size: 23px;
+    -fx-font-family: "CreatoDisplay-Bold";
+    
+    /* Membuat background transparan */
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-background: transparent;
+    
+    /* Menghilangkan border dan efek focus */
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-width: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    
+    /* Padding dan line spacing */
+    -fx-padding: 5;
+    -fx-line-spacing: 1.2;
+}
+
+/* Styling untuk label type (Flora/Fauna) */
+.species-type-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-color: rgba(255,255,255,0);
+    -fx-border-color: white;
+    -fx-border-radius: 50;
+    -fx-border-width: 2;
+    -fx-background-radius: 50;
+    -fx-padding: 5 15;
+    -fx-margin-top: 5;
+    -fx-letter-spacing: 3px;
+    -fx-alignment: center;
+}
+
+/* Styling untuk nama species */
+.species-name {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-padding: 0 0 0 0;
+}
+
+/* Styling untuk nama latin */
+.species-latin-name {
+    -fx-font-size: 25px;
+    -fx-font-weight: bold;
+    -fx-font-style: italic;
+    -fx-text-fill: #95ecf8;
+    -fx-padding: 0 0 5 0;
+}
+
+/* Styling untuk gambar species */
+.species-image {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 15, 0, 0, 5);
+    -fx-background-radius: 15;
+}
+
+/* Styling untuk tombol kembali */
+.back-button {
+    -fx-background-color: rgba(255,255,255,0.2);
+    -fx-padding: 10;
+    -fx-background-radius: 50;
+    -fx-min-width: 45px;
+    -fx-min-height: 45px;
+    -fx-max-width: 45px;
+    -fx-max-height: 45px;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-content-display: center;
+}
+
+.back-button:hover {
+    -fx-background-color: rgba(255,255,255,0.3);
+}
+
+.back-button-icon {
+    -fx-fill: white;
+    -fx-font-family: FontAwesome;
+}
+
+/* Styling untuk Scrollbar */
+.transparent-text-area .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 12;
+    -fx-padding: 0 2;
+}
+
+.transparent-text-area .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255,255,255,0.6);
+    -fx-background-radius: 6;
+    -fx-pref-width: 8;
+}
+
+.transparent-text-area .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: rgba(255,255,255,0.8);
+}
+
+.transparent-text-area .scroll-bar:vertical .track {
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-background-radius: 6;
+}
+
+.transparent-text-area .scroll-bar:vertical .increment-button,
+.transparent-text-area .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+}
+
+.transparent-text-area .scroll-bar:vertical .increment-arrow,
+.transparent-text-area .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+}
+
+/* Menghilangkan border saat focus */
+.transparent-text-area:focused {
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255,255,255,0.2);
+}
+
+.scroll-bar:vertical .increment-button,
+.scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+}
+
+/* Styling untuk tombol kembali dengan FontAwesome */
+.back-button {
+    -fx-background-color: rgba(255,255,255,0.2);
+    -fx-text-fill: white;
+    -fx-padding: 10 15;
+    -fx-background-radius: 50;
+    -fx-cursor: hand;
+}
+
+.back-button:hover {
+    -fx-background-color: rgba(255,255,255,0.3);
+}
+
+.back-button .glyph-icon {
+    -fx-fill: white;
+}
+
+/* Styling untuk tombol tambah dengan FontAwesome */
+.add-button {
+    -fx-background-color: transparent;
+    -fx-border-color: white;
+    -fx-border-width: 2;
+    -fx-border-radius: 50;
+    -fx-background-radius: 50;
+    -fx-min-width: 45px;
+    -fx-min-height: 45px;
+    -fx-max-width: 45px;
+    -fx-max-height: 45px;
+    -fx-padding: 10;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+}
+
+.add-button:hover {
+    -fx-background-color: rgba(255,255,255,0.1);
+}
+
+.add-button-icon {
+    -fx-fill: white;
+    -fx-font-size: 20px;
+}
+
+/* Update window style untuk rounded corners */
+.root {
+    -fx-background-radius: 15;
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+}
+
+AnchorPane {
+    -fx-background-radius: 15;
+    -fx-background-insets: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 0);
+}
+
+/* Update image style untuk rounded corners */
+.species-image {
+    -fx-background-radius: 15;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 15, 0, 0, 5);
+}
+
+/* Styling untuk tombol clear search */
+.clear-search-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-padding: 0 15 0 0;
+    -fx-cursor: hand;
+}
+
+.clear-search-button:hover {
+    -fx-text-fill: #ff6b6b;
+}
+
+/* Update AnchorPane style */
+AnchorPane {
+    -fx-background-radius: 15;
+    -fx-background-insets: 0;
+} 
