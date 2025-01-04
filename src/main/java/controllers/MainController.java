@@ -1,6 +1,9 @@
 package controllers;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,13 +24,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -554,7 +551,9 @@ public class MainController {
                         resultSet.getInt("admin_id"),
                         resultSet.getString("title"),
                         resultSet.getString("description"),
-                        resultSet.getString("image_url")
+                        resultSet.getString("image_url"),
+                        resultSet.getTimestamp("created_at"),
+                        resultSet.getBoolean("is_breaking_news")
                 );
                 if (newsOutput.length() > 0) newsOutput.append("\n");
                 newsOutput.append("Loaded news: ").append(news.getTitle());
