@@ -2,19 +2,99 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
 
-<Pane prefHeight="300.0" prefWidth="250.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MarineSpeciesAdminController">
-   <children>
-      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="300.0" stroke="BLACK" strokeType="INSIDE" width="250.0" />
-      <TextField fx:id="speciesNameField" layoutX="26.0" layoutY="64.0" promptText="Species Name" />
-      <TextField fx:id="speciesDescriptionField" layoutX="26.0" layoutY="97.0" promptText="Species Description" />
-      <TextField fx:id="speciesImageUrlField" layoutX="26.0" layoutY="130.0" promptText="Image URL" />
-      <Button layoutX="63.0" layoutY="170.0" onAction="#addMarineSpecies" text="Add Species" />
-      <Button layoutX="55.0" layoutY="205.0" onAction="#updateMarineSpecies" text="Update Species" />
-      <Button layoutX="59.0" layoutY="240.0" onAction="#deleteMarineSpecies" text="Delete Species" />
-      <Label layoutX="13.0" layoutY="18.0" prefHeight="30.0" prefWidth="224.0" style="-fx-font-size: 20px;" text="Marine Species Admin Panel" textFill="WHITE" />
-   </children>
-</Pane>
+<AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AdminMarineSpeciesController">
+    <children>
+        <Rectangle fill="#1a2238" height="600.0" width="921.0" />
+        
+        <HBox spacing="20" style="-fx-padding: 20;">
+            <!-- Form Input Section -->
+            <VBox prefWidth="350" spacing="15">
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="Marine Species Admin Panel" />
+                
+                <VBox spacing="10">
+                    <Label style="-fx-text-fill: white;" text="Nama Species" />
+                    <TextField fx:id="speciesNameField" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-background-radius: 5; -fx-border-color: #2196F3; -fx-border-radius: 5; -fx-padding: 10;" />
+                    
+                    <Label style="-fx-text-fill: white;" text="Nama Latin" />          
+                    <TextField fx:id="speciesLatinNameField" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-background-radius: 5; -fx-border-color: #2196F3; -fx-border-radius: 5; -fx-padding: 10;" />
+                    
+                    <Label style="-fx-text-fill: white;" text="Jenis Species (Flora/Fauna)" />          
+                    <TextField fx:id="speciesTypeField" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-background-radius: 5; -fx-border-color: #2196F3; -fx-border-radius: 5; -fx-padding: 10;" />
+                    
+                    <Label style="-fx-text-fill: white;" text="Deskripsi" />
+                    <TextArea fx:id="speciesDescriptionField" prefHeight="100.0" style="-fx-control-inner-background: #1a2238; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-color: #1a2238; -fx-border-color: #2196F3; -fx-border-width: 2; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 1;" wrapText="true" />
+                    
+                    <Label style="-fx-text-fill: white;" text="Gambar" />
+                    <HBox spacing="10">
+                        <TextField fx:id="speciesImageUrlField" editable="false" promptText="Pilih gambar..." style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-background-radius: 5; -fx-border-color: #2196F3; -fx-border-radius: 5; -fx-padding: 10;" HBox.hgrow="ALWAYS" />
+                        <Button onAction="#chooseImage" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 10 15; -fx-background-radius: 5;" text="Pilih File" />
+                    </HBox>
+                </VBox>
+                
+                <!-- CRUD Buttons -->
+                <HBox spacing="10">
+                    <Button onAction="#addSpecies" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Tambah" />
+                    <Button onAction="#updateSpecies" style="-fx-background-color: #FFC107; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Update" />
+                    <Button onAction="#deleteSpecies" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Hapus" />
+                </HBox>
+            </VBox>
+            
+            <!-- Lists Section -->
+            <VBox spacing="20">
+                <!-- Pending Species Section -->
+                <VBox spacing="10">
+                    <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;" text="Species Pending" />
+                    <ListView fx:id="pendingSpeciesListView" prefHeight="200" style="-fx-background-color: rgba(255,255,255,0.1);">
+                        <style>
+                            .list-cell {
+                                -fx-text-fill: white;
+                                -fx-padding: 10;
+                            }
+                            .list-cell:filled:selected {
+                                -fx-background-color: #4CAF50;
+                            }
+                            .list-cell:filled:hover {
+                                -fx-background-color: rgba(76,175,80,0.3);
+                            }
+                        </style>
+                    </ListView>
+                    <HBox spacing="10">
+                        <Button onAction="#approveSpecies" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Setujui Species" />
+                        <Button onAction="#rejectSpecies" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Tolak Species" />
+                    </HBox>
+                </VBox>
+                
+                <!-- Approved Species Section -->
+                <VBox spacing="10">
+                    <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;" text="Species Disetujui" />
+                    <ListView fx:id="approvedSpeciesListView" prefHeight="200" style="-fx-background-color: rgba(255,255,255,0.1);">
+                        <style>
+                            .list-cell {
+                                -fx-text-fill: white;
+                                -fx-padding: 10;
+                            }
+                            .list-cell:filled:selected {
+                                -fx-background-color: #4CAF50;
+                            }
+                            .list-cell:filled:hover {
+                                -fx-background-color: rgba(76,175,80,0.3);
+                            }
+                        </style>
+                    </ListView>
+                </VBox>
+            </VBox>
+        </HBox>
+         
+            <ImageView fx:id="previewImage" fitHeight="250" fitWidth="250" layoutX="653.0" layoutY="43.0" preserveRatio="true" style="-fx-background-radius: 10;" />
+         <Label layoutX="741.0" layoutY="28.0" style="-fx-font-size: 20; -fx-text-fill: white; -fx-font-weight: bold;" text="Preview" />
+    </children>
+</AnchorPane>

@@ -26,4 +26,8 @@ public class AlertUtils {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    public static boolean showConfirmation(String konfirmasi, String s) {
+        return false;
+    }
 } 

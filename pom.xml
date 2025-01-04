@@ -117,6 +117,20 @@
             <version>RELEASE</version>
             <scope>compile</scope>
         </dependency>
+
+        <!-- FontAwesomeFX -->
+        <dependency>
+            <groupId>de.jensd</groupId>
+            <artifactId>fontawesomefx-fontawesome</artifactId>
+            <version>4.7.0-9.1.2</version>
+        </dependency>
+        
+        <!-- FontAwesomeFX Commons (required) -->
+        <dependency>
+            <groupId>de.jensd</groupId>
+            <artifactId>fontawesomefx-commons</artifactId>
+            <version>9.1.2</version>
+        </dependency>
     </dependencies>
 
     <build>

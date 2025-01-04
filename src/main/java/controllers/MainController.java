@@ -12,10 +12,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import dao.MarineSpeciesDAO;
 import dao.NewsDAO;
 import dao.RecommendationDAO;
 import dao.UserDAO;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -27,20 +29,13 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import models.Admin;
-import models.Challenge;
-import models.News;
-import models.Recommendation;
-import models.User;
+import javafx.stage.StageStyle;
+import models.*;
 import utils.AlertUtils;
 import utils.ChallengeDetailsFetcher;
 import utils.DatabaseHelper;
@@ -111,6 +106,22 @@ public class MainController {
     @FXML
     private VBox newsContainer;
     @FXML
+    private ListView<MarineSpecies> speciesListView;
+    @FXML
+    private FlowPane speciesFlowPane;
+    @FXML
+    private TextField speciesSearchField;
+    @FXML
+    private Button newsAdminButton;
+    @FXML
+    private Button marineSpeciesAdminButton;
+    @FXML
+    private Button recommendationAdminButton;
+    @FXML
+    private Button challengeAdminButton;
+    @FXML
+    private Button userAdminButton;
+    @FXML
     private Button discussionButton;
     @FXML
     private Button discussionButton1;
@@ -126,6 +137,8 @@ public class MainController {
     private Button discussionButton22;
     @FXML
     private Button discussionButton111;
+    @FXML
+    private Button clearSearchButton;
 
     private User currentUser;
     private Admin currentAdmin;
@@ -134,6 +147,7 @@ public class MainController {
     private LeaderboardFetcher leaderboardFetcher = new LeaderboardFetcher();
     private NewsDAO newsDAO;
     private AdminController adminController;
+    private MarineSpeciesDAO marineSpeciesDAO = new MarineSpeciesDAO();
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
@@ -141,7 +155,7 @@ public class MainController {
             usernameLabel.setText(user.getName());
             System.out.println("Set current user: " + user.getName());
             usernameLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: white;");
-            
+
             // Refresh challenges setelah user diset
             refreshChallenges();
         }
@@ -184,6 +198,195 @@ public class MainController {
 
     @FXML
     public void initialize() {
+        System.out.println("Initializing MainController...");
+        
+        try {
+            ObservableList<MarineSpecies> speciesList = marineSpeciesDAO.getAllMarineSpecies();
+            System.out.println("Loaded species count: " + speciesList.size());
+
+            if (speciesFlowPane != null) {
+                speciesFlowPane.getChildren().clear();
+
+                // Create cards for each species
+                for (MarineSpecies species : speciesList) {
+                    VBox card = createSpeciesCard(species);
+                    if (card != null) {
+                        speciesFlowPane.getChildren().add(card);
+                        System.out.println("Added card for species: " + species.getName());
+                    }
+                }
+            } else {
+                System.err.println("Error: speciesFlowPane is null!");
+            }
+        } catch (Exception e) {
+            System.err.println("Error initializing marine species view: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Add tab change listener untuk refresh
+        tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            if (newTab.getText().equals("MARINE SPECIES")) {
+                refreshSpeciesView();
+            }
+        });
+
+        // Add search listener
+        speciesSearchField.setPromptText("Cari nama species atau nama latin...");
+        speciesSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            clearSearchButton.setVisible(!newValue.isEmpty());
+            filterSpecies(newValue);
+        });
+
+        setupButtonHoverEffect(newsAdminButton, "#2196F3", "#21CBF3");
+        setupButtonHoverEffect(marineSpeciesAdminButton, "#4CAF50", "#8BC34A");
+        setupButtonHoverEffect(recommendationAdminButton, "#FF9800", "#FFC107");
+        setupButtonHoverEffect(challengeAdminButton, "#F44336", "#E57373");
+        setupButtonHoverEffect(userAdminButton, "#9C27B0", "#BA68C8");
+    }
+
+    private void filterSpecies(String newValue) {
+        speciesFlowPane.getChildren().clear();
+        ObservableList<MarineSpecies> filteredSpecies;
+
+        if (newValue == null || newValue.isEmpty()) {
+            filteredSpecies = marineSpeciesDAO.getAllApprovedSpecies();
+        } else {
+            filteredSpecies = marineSpeciesDAO.searchSpecies(newValue);
+        }
+
+        for (MarineSpecies species : filteredSpecies) {
+            speciesFlowPane.getChildren().add(createSpeciesCard(species));
+        }
+
+        speciesFlowPane.setAlignment(Pos.TOP_LEFT);
+    }
+
+    private void setupButtonHoverEffect(Button button, String color1, String color2) {
+        button.setStyle("-fx-background-color: linear-gradient(to right, " + color1 + ", " + color2 + ");" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 16px;" +
+                "-fx-font-weight: bold;" +
+                "-fx-background-radius: 30;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
+
+        button.setOnMouseEntered(e -> button.setStyle("-fx-background-color: linear-gradient(to right, " + color2 + ", " + color1 + ");" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 16px;" +
+                "-fx-font-weight: bold;" +
+                "-fx-background-radius: 30;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);"));
+
+        button.setOnMouseExited(e -> button.setStyle("-fx-background-color: linear-gradient(to right, " + color1 + ", " + color2 + ");" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 16px;" +
+                "-fx-font-weight: bold;" +
+                "-fx-background-radius: 30;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);"));
+    }
+
+    void refreshSpeciesView() {
+        if (speciesFlowPane != null) {
+            speciesFlowPane.getChildren().clear();
+            ObservableList<MarineSpecies> speciesList = marineSpeciesDAO.getAllApprovedSpecies();
+
+            for (MarineSpecies species : speciesList) {
+                VBox card = createSpeciesCard(species);
+                if (card != null) {
+                    speciesFlowPane.getChildren().add(card);
+                }
+            }
+        }
+    }
+
+    private VBox createSpeciesCard(MarineSpecies species) {
+        // Card container
+        VBox card = new VBox(10);
+        card.setAlignment(Pos.CENTER);
+        card.setPrefWidth(200);
+        card.setPrefHeight(250);
+        card.setMaxWidth(200);
+        card.setMinWidth(200);
+        card.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
+                "-fx-background-radius: 15; " +
+                "-fx-padding: 15;");
+
+        // Image container
+        StackPane imageContainer = new StackPane();
+        imageContainer.setMinHeight(150);
+
+        // Image
+        ImageView imageView = new ImageView();
+        imageView.setFitHeight(150);
+        imageView.setFitWidth(150);
+        imageView.setPreserveRatio(true);
+
+        try {
+            Image image = new Image(getClass().getResourceAsStream(species.getImageUrl()));
+            imageView.setImage(image);
+        } catch (Exception e) {
+            System.err.println("Error loading image: " + species.getImageUrl());
+            try {
+                Image defaultImage = new Image(getClass().getResourceAsStream("/images/default_species.jpg"));
+                imageView.setImage(defaultImage);
+            } catch (Exception ex) {
+                System.err.println("Error loading default image");
+            }
+        }
+
+        imageContainer.getChildren().add(imageView);
+
+        // Species name
+        Label nameLabel = new Label(species.getName());
+        nameLabel.setStyle("-fx-font-size: 16px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-text-fill: white; " +
+                "-fx-alignment: center; " +
+                "-fx-text-alignment: center;");
+        nameLabel.setWrapText(true);
+        nameLabel.setMaxWidth(180);
+
+        // Add components to card
+        card.getChildren().addAll(imageContainer, nameLabel);
+
+        // Add hover effect
+        card.setOnMouseEntered(e -> {
+            card.setStyle("-fx-background-color: rgba(255,255,255,0.2); " +
+                    "-fx-background-radius: 15; " +
+                    "-fx-padding: 15; " +
+                    "-fx-cursor: hand;");
+        });
+
+        card.setOnMouseExited(e -> {
+            card.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
+                    "-fx-background-radius: 15; " +
+                    "-fx-padding: 15;");
+        });
+
+        // Add click event
+        card.setOnMouseClicked(e -> showMarineSpeciesDetails(species));
+
+        return card;
+    }
+
+    private void showMarineSpeciesDetails(MarineSpecies species) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/marinespecies.fxml"));
+            Parent root = loader.load();
+
+            MarineSpeciesController controller = loader.getController();
+            controller.setSpeciesData(species);
+
+            Stage stage = new Stage();
+            stage.initStyle(StageStyle.UNDECORATED);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle(species.getName());
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            AlertUtils.showError("Error", "Failed to load species details: " + e.getMessage());
+        }
+
         System.out.print("Initializing MainController...\n");
 
         // Initialize containers
@@ -258,12 +461,12 @@ public class MainController {
                 newScene.windowProperty().addListener((obs2, oldWindow, newWindow) -> {
                     if (newWindow != null) {
                         Stage stage = (Stage) newWindow;
-                        
+
                         if (!contentPane.getChildren().isEmpty() && contentPane.getChildren().get(0) instanceof Pane) {
                             Pane mainPane = (Pane) contentPane.getChildren().get(0);
                             mainPane.prefWidthProperty().bind(stage.widthProperty());
                             mainPane.prefHeightProperty().bind(stage.heightProperty());
-                            
+
                             if (!mainPane.getChildren().isEmpty()) {
                                 // Bind background image
                                 if (mainPane.getChildren().get(0) instanceof ImageView) {
@@ -271,7 +474,7 @@ public class MainController {
                                     backgroundImage.fitWidthProperty().bind(stage.widthProperty());
                                     backgroundImage.fitHeightProperty().bind(stage.heightProperty());
                                 }
-                                
+
                                 // Bind overlay rectangle
                                 if (mainPane.getChildren().size() > 1 && mainPane.getChildren().get(1) instanceof Rectangle) {
                                     Rectangle overlay = (Rectangle) mainPane.getChildren().get(1);
@@ -290,7 +493,7 @@ public class MainController {
     private void handleDiscussionButtonClick(ActionEvent event) {
         Button sourceButton = (Button) event.getSource();
         String locationName;
-        
+
         // Tentukan lokasi berdasarkan fx:id button
         switch (sourceButton.getId()) {
             case "discussionButton":
@@ -311,7 +514,7 @@ public class MainController {
                 locationName = "Unknown Location";
                 break;
         }
-        
+
         openDiscussion(locationName);
     }
 
@@ -518,7 +721,7 @@ public class MainController {
             controller.setUser(currentUser);
 
             Stage stage = new Stage();
-            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("User Profile");
             stage.setScene(new Scene(root));
             stage.showAndWait();
@@ -733,17 +936,17 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_marinespecies.fxml"));
             Parent root = loader.load();
 
-            MarineSpeciesAdminController controller = loader.getController();
-            controller.setMainController(this);
-
+            AdminMarineSpeciesController controller = loader.getController();
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Marine Species Admin Panel");
+            stage.setTitle("Admin Marine Species");
             stage.setScene(new Scene(root));
-            stage.showAndWait();
-        } catch (Exception e) {
+            stage.show();
+
+        } catch (IOException e) {
+            System.err.println("Error loading admin marine species: " + e.getMessage());
             e.printStackTrace();
-            AlertUtils.showError("Error", "Failed to load Marine Species Admin panel.");
+            AlertUtils.showError("Error", "Failed to load admin marine species: " + e.getMessage());
         }
     }
 
@@ -829,9 +1032,9 @@ public class MainController {
                     query = "SELECT * FROM challenges ORDER BY start_date DESC";
                 } else if (currentUser != null) {  // Pastikan user sudah login
                     query = "SELECT c.*, " +
-                           "(SELECT status FROM user_challenges uc " +
-                           "WHERE uc.challenge_id = c.id AND uc.user_id = ? AND uc.status = 'COMPLETED') as completion_status " +
-                           "FROM challenges c ORDER BY c.start_date DESC";
+                            "(SELECT status FROM user_challenges uc " +
+                            "WHERE uc.challenge_id = c.id AND uc.user_id = ? AND uc.status = 'COMPLETED') as completion_status " +
+                            "FROM challenges c ORDER BY c.start_date DESC";
                 } else {
                     System.err.println("No user or admin logged in!");
                     return;  // Keluar jika tidak ada yang login
@@ -839,7 +1042,7 @@ public class MainController {
 
                 try (Connection conn = DatabaseHelper.getConnection();
                      PreparedStatement stmt = conn.prepareStatement(query)) {
-                    
+
                     ResultSet rs;
                     if (!isAdmin && currentUser != null) {
                         stmt.setInt(1, currentUser.getId());
@@ -857,7 +1060,7 @@ public class MainController {
                                 rs.getString("start_date"),
                                 rs.getString("end_date")
                         );
-                        
+
                         boolean isVerified = false;
                         if (!isAdmin && currentUser != null) {
                             isVerified = rs.getString("completion_status") != null;
@@ -903,14 +1106,14 @@ public class MainController {
             HBox verifiedBadge = new HBox(5);
             verifiedBadge.setAlignment(Pos.CENTER);
             verifiedBadge.setStyle(
-                "-fx-background-color: #4CAF50;" +
-                "-fx-padding: 5 10;" +
-                "-fx-background-radius: 15;"
+                    "-fx-background-color: #4CAF50;" +
+                            "-fx-padding: 5 10;" +
+                            "-fx-background-radius: 15;"
             );
 
             Label checkIcon = new Label("✓");
             checkIcon.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
-            
+
             Label verifiedText = new Label("Terverifikasi");
             verifiedText.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
 
@@ -935,9 +1138,9 @@ public class MainController {
         Button detailsButton = new Button("View Details");
         detailsButton.setStyle(
                 "-fx-background-color: #2196F3; " +
-                "-fx-text-fill: white; " +
-                "-fx-padding: 8 20; " +
-                "-fx-background-radius: 20;"
+                        "-fx-text-fill: white; " +
+                        "-fx-padding: 8 20; " +
+                        "-fx-background-radius: 20;"
         );
         detailsButton.setOnAction(e -> displayChallengeDetails(challenge));
 
@@ -979,13 +1182,13 @@ public class MainController {
             List<News> allNews = newsDAO.getAllNews();
             VBox newsContainer = new VBox(15); // spacing 15 pixels
             newsContainer.setPadding(new Insets(10));
-            
+
             for (News news : allNews) {
                 // Buat card berita
                 StackPane newsCard = createNewsCard(news);
                 newsContainer.getChildren().add(newsCard);
             }
-            
+
             // Tambahkan VBox ke dalam ScrollPane
             if (newsScrollPane != null) {
                 newsScrollPane.setContent(newsContainer);
@@ -1001,26 +1204,26 @@ public class MainController {
         card.setPrefHeight(140);
         card.setPrefWidth(635);
         card.setStyle("-fx-cursor: hand;");
-        
+
         // Background rectangle
         Rectangle background = new Rectangle(635, 140);
         background.setArcHeight(5);
         background.setArcWidth(5);
         background.setFill(Color.web("#a5d6dc", 0.55));
-        
+
         // News title
         Label titleLabel = new Label(news.getTitle());
         titleLabel.setWrapText(true);
         titleLabel.setStyle("-fx-font-family: 'Maiandra GD'; -fx-font-size: 18px;");
-        titleLabel.setAlignment(javafx.geometry.Pos.CENTER);
+        titleLabel.setAlignment(Pos.CENTER);
         titleLabel.setPrefWidth(606);
-        
+
         // Add click event
         card.setOnMouseClicked(event -> showNewsDetails(news.getTitle()));
-        
+
         // Add elements to card
         card.getChildren().addAll(background, titleLabel);
-        
+
         return card;
     }
 
@@ -1031,7 +1234,7 @@ public class MainController {
     private void openDiscussion(String locationName) {
         try {
             System.out.println("Opening discussion for: " + locationName);
-            
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/recomDiscuss.fxml"));
             Parent root = loader.load();
 
@@ -1043,10 +1246,75 @@ public class MainController {
             stage.setTitle("Diskusi " + locationName);
             stage.setScene(new Scene(root));
             stage.show();
-            
+
         } catch (IOException e) {
             System.err.println("Error opening discussion window: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    public void showAddSpeciesDialog(ActionEvent event) {
+        System.out.println("showAddSpeciesDialog called");
+        try {
+            System.out.println("Loading add_species_dialog.fxml");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/add_species_dialog.fxml"));
+            Parent root = loader.load();
+            System.out.println("FXML loaded successfully");
+
+            AddSpeciesController controller = loader.getController();
+            controller.setMainController(this);
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Add New Species");
+            stage.setScene(new Scene(root));
+            
+            System.out.println("Showing add species dialog");
+            stage.showAndWait();
+
+            System.out.println("Dialog closed, refreshing view");
+            refreshSpeciesView();
+        } catch (IOException e) {
+            System.err.println("Error showing add species dialog: " + e.getMessage());
+            e.printStackTrace();
+            AlertUtils.showError("Error", "Failed to open add species dialog: " + e.getMessage());
+        }
+    }
+
+    private Button createAddSpeciesButton() {
+        Button addButton = new Button("+");
+        addButton.setPrefSize(200, 250);
+        addButton.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 40px; " +
+                "-fx-background-radius: 15; " +
+                "-fx-cursor: hand;");
+
+        addButton.setOnMouseEntered(e -> 
+            addButton.setStyle("-fx-background-color: rgba(255,255,255,0.2); " +
+                    "-fx-text-fill: white; " +
+                    "-fx-font-size: 40px; " +
+                    "-fx-background-radius: 15; " +
+                    "-fx-cursor: hand;")
+        );
+
+        addButton.setOnMouseExited(e -> 
+            addButton.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
+                    "-fx-text-fill: white; " +
+                    "-fx-font-size: 40px; " +
+                    "-fx-background-radius: 15; " +
+                    "-fx-cursor: hand;")
+        );
+
+        ActionEvent event = null;
+        addButton.setOnAction(e -> showAddSpeciesDialog(event));
+        return addButton;
+    }
+
+    @FXML
+    private void clearSearch() {
+        speciesSearchField.clear();
+        filterSpecies("");
     }
 }
