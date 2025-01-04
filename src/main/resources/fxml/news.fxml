@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="controllers.NewsController"
+      spacing="20">
+
+    <!-- Search Bar -->
+    <VBox style="-fx-padding: 20px; -fx-alignment: center; -fx-background-color: transparent;">
+        <TextField fx:id="searchField"
+                   promptText="Cari berita..."
+                   style="-fx-pref-width: 300px; -fx-background-radius: 20px; -fx-padding: 8px 15px; -fx-background-color: rgba(255, 255, 255, 0.9); -fx-prompt-text-fill: #666666;"/>
+    </VBox>
+
+    <!-- Breaking News Section -->
+    <VBox fx:id="breakingNewsContainer"
+          style="-fx-background-color: transparent; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 15, 0, 0, 0); -fx-background-radius: 15px; -fx-min-height: 400px;">
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
+    </VBox>
+
+    <!-- News Grid -->
+    <ScrollPane fitToWidth="true"
+                style="-fx-background: transparent; -fx-background-color: transparent;">
+        <GridPane fx:id="newsGrid"
+                  style="-fx-hgap: 20px; -fx-vgap: 20px; -fx-padding: 20px;">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="33.33"/>
+                <ColumnConstraints percentWidth="33.33"/>
+                <ColumnConstraints percentWidth="33.33"/>
+            </columnConstraints>
+        </GridPane>
+    </ScrollPane>
+
+</VBox>
