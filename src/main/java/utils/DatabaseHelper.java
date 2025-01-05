@@ -6,15 +6,15 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseHelper {
-    private static final String URL = "jdbc:mysql://localhost:3306/hiros_marine";
-    private static final String USER = "root";
-    private static final String PASSWORD = "";
+    private static final String URL = "jdbc:mysql://34.44.81.201:3306/hiros_marine";
+    private static final String USER = "hiro";
+    private static final String PASSWORD = "hiro";
 
     public static Connection getConnection() throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Database connection successful");
+            System.out.println("Database connection successful (DatabaseHelper)");
             return conn;
         } catch (ClassNotFoundException e) {
             throw new SQLException("MySQL JDBC Driver not found", e);

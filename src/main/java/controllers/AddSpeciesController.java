@@ -57,50 +57,39 @@ public class AddSpeciesController {
 
     @FXML
     private void saveSpecies() {
-        String imageUrl = imageUrlField.getText();
-        String name = nameField.getText();
-        String latinName = latinNameField.getText();
-        String description = descriptionField.getText();
-        String type = typeField.getText();         // Flora/Fauna
-
-        // Validasi input
-        if (imageUrl.isEmpty() || name.isEmpty() || latinName.isEmpty() || 
-            description.isEmpty() || type.isEmpty()) {
-            AlertUtils.showError("Error", "Semua field harus diisi!");
-            return;
-        }
-
-        // Validasi tipe species
-        if (!type.equalsIgnoreCase("Flora") && !type.equalsIgnoreCase("Fauna")) {
-            AlertUtils.showError("Error", "Tipe species harus 'Flora' atau 'Fauna'!");
-            return;
-        }
-
-        // Format URL gambar
-        if (!imageUrl.startsWith("/images/")) {
-            imageUrl = "/images/" + imageUrl;
-        }
-
-        // Buat objek MarineSpecies dengan urutan sesuai struktur tabel
-        MarineSpecies newSpecies = new MarineSpecies(
-            0,          // id
-            imageUrl,   // image_url
-            name,       // name
-            latinName,  // latin_name
-            description,// description
-            type        // type (Flora/Fauna)
-        );
-
         try {
+            // Validasi input
+            if (nameField.getText().isEmpty() || latinNameField.getText().isEmpty() || 
+                typeField.getText().isEmpty() || descriptionField.getText().isEmpty() || 
+                imageUrlField.getText().isEmpty()) {
+                AlertUtils.showError("Error", "Semua field harus diisi!");
+                return;
+            }
+
+            MarineSpecies newSpecies = new MarineSpecies(
+                0, // ID akan di-generate oleh database
+                imageUrlField.getText(),
+                nameField.getText(),
+                latinNameField.getText(),
+                descriptionField.getText(),
+                typeField.getText()
+            );
+
+            System.out.println("Attempting to add species: " + newSpecies.getName());
             marineSpeciesDAO.addPendingSpecies(newSpecies);
+            
+            AlertUtils.showInfo("Sukses", "Species berhasil ditambahkan dan menunggu persetujuan admin!");
+            
             if (mainController != null) {
                 mainController.refreshSpeciesView();
             }
-            AlertUtils.showInfo("Sukses", "Species berhasil ditambahkan dan menunggu persetujuan admin!");
-            clearFields();
+            
             ((Stage) nameField.getScene().getWindow()).close();
+            
         } catch (SQLException e) {
-            AlertUtils.showError("Error", "Gagal menambahkan species: " + e.getMessage());
+            System.err.println("Error saving species: " + e.getMessage());
+            e.printStackTrace();
+            AlertUtils.showError("Error", "Gagal menyimpan species: " + e.getMessage());
         }
     }
 

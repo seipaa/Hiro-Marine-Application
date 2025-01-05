@@ -115,28 +115,36 @@ public class MarineSpeciesDAO extends BaseDAO {
         String query = "INSERT INTO species (image_url, name, latin_name, description, type, status) " +
                 "VALUES (?, ?, ?, ?, ?, 'pending')";
 
-        try (Connection con = DatabaseHelper.getConnection();
+        try (Connection con = getConnection();
              PreparedStatement stmt = con.prepareStatement(query)) {
 
             String imageUrl = species.getImageUrl();
             if (!imageUrl.startsWith("/images/")) {
                 imageUrl = "/images/" + imageUrl;
             }
-
             stmt.setString(1, imageUrl);
             stmt.setString(2, species.getName());
             stmt.setString(3, species.getLatinName());
             stmt.setString(4, species.getDescription());
             stmt.setString(5, species.getType());
 
-            stmt.executeUpdate();
+            int result = stmt.executeUpdate();
+            if (result > 0) {
+                System.out.println("Species added successfully: " + species.getName());
+            } else {
+                throw new SQLException("Failed to add species");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error adding species: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 
     public void approveSpecies(int id) {
         String query = "UPDATE species SET status = 'approved' WHERE id = ?";
         
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             
             stmt.setInt(1, id);
@@ -145,7 +153,7 @@ public class MarineSpeciesDAO extends BaseDAO {
             if (result > 0) {
                 System.out.println("Species with ID " + id + " has been approved");
             } else {
-                System.out.println("No species found with ID " + id);
+                throw new SQLException("No species found with ID " + id);
             }
         } catch (SQLException e) {
             System.err.println("Error approving species: " + e.getMessage());
@@ -239,21 +247,29 @@ public class MarineSpeciesDAO extends BaseDAO {
     public void updateSpecies(MarineSpecies species) throws SQLException {
         String query = "UPDATE species SET image_url = ?, name = ?, latin_name = ?, " +
                 "description = ?, type = ? WHERE id = ?";
-        try (Connection con = DatabaseHelper.getConnection();
+
+        try (Connection con = getConnection();
              PreparedStatement stmt = con.prepareStatement(query)) {
 
             String imageUrl = species.getImageUrl();
             if (!imageUrl.startsWith("/images/")) {
                 imageUrl = "/images/" + imageUrl;
             }
-
             stmt.setString(1, imageUrl);
             stmt.setString(2, species.getName());
             stmt.setString(3, species.getLatinName());
             stmt.setString(4, species.getDescription());
             stmt.setString(5, species.getType());
             stmt.setInt(6, species.getId());
-            stmt.executeUpdate();
+
+            int result = stmt.executeUpdate();
+            if (result != 1) {
+                throw new SQLException("Failed to update species");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error updating species: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 
