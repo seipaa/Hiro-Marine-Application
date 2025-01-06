@@ -5,17 +5,30 @@ public class Recommendation {
     private String locationName;
     private String description;
     private String imageUrl;
+    private byte[] imageData;
     private double rating;
-    private String category;
 
+    // Default constructor
+    public Recommendation() {
+        this.id = 0;
+        this.locationName = "";
+        this.description = "";
+        this.imageUrl = "";
+        this.imageData = null;
+        this.rating = 0.0;
+    }
+
+    // Constructor with parameters
     public Recommendation(int id, String locationName, String description, String imageUrl, double rating) {
         this.id = id;
         this.locationName = locationName;
         this.description = description;
         this.imageUrl = imageUrl;
+        this.imageData = null;
         this.rating = rating;
     }
 
+    // Getters
     public int getId() {
         return id;
     }
@@ -32,10 +45,15 @@ public class Recommendation {
         return imageUrl;
     }
 
+    public byte[] getImageData() {
+        return imageData;
+    }
+
     public double getRating() {
         return rating;
     }
 
+    // Setters
     public void setId(int id) {
         this.id = id;
     }
@@ -52,12 +70,11 @@ public class Recommendation {
         this.imageUrl = imageUrl;
     }
 
-    public void setRating(double rating) {
-        this.rating = rating;
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
     }
 
-    @Override
-    public String toString() {
-        return locationName;
+    public void setRating(double rating) {
+        this.rating = rating;
     }
 }
