@@ -8,16 +8,16 @@ public class RecomDiscuss {
     private String userName;
     private String locationName;
     private String description;
-    private String imageUrl;
+    private byte[] imageData;
     private LocalDateTime timestamp;
 
-    public RecomDiscuss(int id, int userId, String userName, String locationName, String description, String imageUrl, LocalDateTime timestamp) {
+    public RecomDiscuss(int id, int userId, String userName, String locationName, String description, byte[] imageData, LocalDateTime timestamp) {
         this.id = id;
         this.userId = userId;
         this.userName = userName;
         this.locationName = locationName;
         this.description = description;
-        this.imageUrl = imageUrl;
+        this.imageData = imageData;
         this.timestamp = timestamp;
     }
 
@@ -37,9 +37,9 @@ public class RecomDiscuss {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public byte[] getImageData() { return imageData; }
+    public void setImageData(byte[] imageData) { this.imageData = imageData; }
 
     public LocalDateTime getTimestamp() { return timestamp; }
-    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp =timestamp;}
 }
