@@ -293,9 +293,17 @@ public class MainController {
             speciesFlowPane.getChildren().clear();
             ObservableList<MarineSpecies> speciesList = marineSpeciesDAO.getAllMarineSpecies();
             
-            for (MarineSpecies species : speciesList) {
-                speciesFlowPane.getChildren().add(createSpeciesCard(species));
+            if (speciesList.isEmpty()) {
+                System.out.println("No species found in database");
+                return;
             }
+
+            for (MarineSpecies species : speciesList) {
+                VBox card = createSpeciesCard(species);
+                speciesFlowPane.getChildren().add(card);
+            }
+            
+            speciesFlowPane.setAlignment(Pos.CENTER);
         } catch (Exception e) {
             System.err.println("Error refreshing species view: " + e.getMessage());
             e.printStackTrace();
@@ -303,71 +311,78 @@ public class MainController {
     }
 
     private VBox createSpeciesCard(MarineSpecies species) {
-        // Card container
-        VBox card = new VBox(10);
-        card.setAlignment(Pos.CENTER);
-        card.setPrefWidth(200);
-        card.setPrefHeight(250);
-        card.setMaxWidth(200);
-        card.setMinWidth(200);
-        card.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
-                "-fx-background-radius: 15; " +
-                "-fx-padding: 15;");
+        // Buat VBox untuk menampung gambar dan nama
+        VBox speciesCard = new VBox(10);
+        speciesCard.setAlignment(Pos.CENTER);
+        speciesCard.setPrefWidth(200);
+        speciesCard.setPrefHeight(250);
+        speciesCard.getStyleClass().add("species-card");
+        speciesCard.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
+                            "-fx-background-radius: 15; " +
+                            "-fx-padding: 10;");
 
-        // Image container
-        StackPane imageContainer = new StackPane();
-        imageContainer.setMinHeight(150);
-
-        // Image
+        // Buat ImageView untuk gambar species
         ImageView imageView = new ImageView();
-        imageView.setFitHeight(150);
-        imageView.setFitWidth(150);
+        imageView.setFitWidth(180);
+        imageView.setFitHeight(180);
         imageView.setPreserveRatio(true);
 
-        // Load image from database
-        if (species.getImageUrl() != null && !species.getImageUrl().isEmpty()) {
-            Image image = new Image(getClass().getResourceAsStream(species.getImageUrl()));
-            imageView.setImage(image);
-        } else {
-            // Load default image jika tidak ada gambar
-            Image defaultImage = new Image(getClass().getResourceAsStream("/images/default_species.jpg"));
-            imageView.setImage(defaultImage);
+        // Load gambar
+        try {
+            byte[] imageData = marineSpeciesDAO.getSpeciesImage(species.getId());
+            if (imageData != null && imageData.length > 0) {
+                Image image = new Image(new ByteArrayInputStream(imageData));
+                imageView.setImage(image);
+            } else {
+                // Load default image jika tidak ada gambar di database
+                Image defaultImage = new Image(getClass().getResourceAsStream("/images/default_species.jpg"));
+                if (defaultImage != null) {
+                    imageView.setImage(defaultImage);
+                } else {
+                    System.err.println("Default image not found");
+                    // Set background color sebagai fallback
+                    imageView.setStyle("-fx-background-color: #cccccc;");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading species image: " + e.getMessage());
+            e.printStackTrace();
+            // Set background color sebagai fallback
+            imageView.setStyle("-fx-background-color: #cccccc;");
         }
 
-        imageContainer.getChildren().add(imageView);
-
-        // Species name
+        // Buat label untuk nama species
         Label nameLabel = new Label(species.getName());
-        nameLabel.setStyle("-fx-font-size: 16px; " +
-                "-fx-font-weight: bold; " +
-                "-fx-text-fill: white; " +
-                "-fx-alignment: center; " +
-                "-fx-text-alignment: center;");
+        nameLabel.setStyle("-fx-text-fill: white; " +
+                          "-fx-font-size: 14px; " +
+                          "-fx-font-weight: bold; " +
+                          "-fx-wrap-text: true; " +
+                          "-fx-alignment: center;");
         nameLabel.setWrapText(true);
         nameLabel.setMaxWidth(180);
         nameLabel.setAlignment(Pos.CENTER);
 
-        // Add components to card
-        card.getChildren().addAll(imageContainer, nameLabel);
+        // Tambahkan imageView dan label ke card
+        speciesCard.getChildren().addAll(imageView, nameLabel);
 
-        // Add hover effect
-        card.setOnMouseEntered(e -> {
-            card.setStyle("-fx-background-color: rgba(255,255,255,0.2); " +
-                    "-fx-background-radius: 15; " +
-                    "-fx-padding: 15; " +
-                    "-fx-cursor: hand;");
-        });
+        // Tambahkan hover effect
+        speciesCard.setOnMouseEntered(e -> 
+            speciesCard.setStyle("-fx-background-color: rgba(255,255,255,0.2); " +
+                               "-fx-background-radius: 15; " +
+                               "-fx-padding: 10; " +
+                               "-fx-cursor: hand;")
+        );
 
-        card.setOnMouseExited(e -> {
-            card.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
-                    "-fx-background-radius: 15; " +
-                    "-fx-padding: 15;");
-        });
+        speciesCard.setOnMouseExited(e -> 
+            speciesCard.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
+                               "-fx-background-radius: 15; " +
+                               "-fx-padding: 10;")
+        );
 
-        // Add click event
-        card.setOnMouseClicked(e -> showMarineSpeciesDetails(species));
+        // Tambahkan event handler untuk membuka detail species
+        speciesCard.setOnMouseClicked(e -> showSpeciesDetails(species));
 
-        return card;
+        return speciesCard;
     }
 
     private void showMarineSpeciesDetails(MarineSpecies species) {

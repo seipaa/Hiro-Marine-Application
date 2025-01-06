@@ -355,7 +355,7 @@
                             </Tab>
                         </tabs>
                     </TabPane>
-                    <Label alignment="CENTER" layoutX="300.0" layoutY="20.0" lineSpacing="5.0" text="HIRO'S MARINE" textFill="WHITE">
+                    <Label alignment="CENTER" layoutX="8.0" layoutY="20.0" lineSpacing="5.0" prefHeight="100.0" prefWidth="1000.0" text="HIRO'S MARINE" textFill="WHITE">
                         <font>
                             <Font name="Searocks-Regular" size="96.0" />
                         </font>
