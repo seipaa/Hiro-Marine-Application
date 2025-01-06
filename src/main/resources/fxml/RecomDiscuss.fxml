@@ -36,19 +36,6 @@
                           -fx-font-weight: bold;
                           -fx-text-fill: #1a2980;"/>
 
-            <!-- Deskripsi -->
-            <TextArea fx:id="recommendationDescription"
-                      editable="false"
-                      wrapText="true"
-                      prefHeight="150.0"
-                      style="-fx-background-color: rgba(255, 255, 255, 0.9);
-                             -fx-text-fill: #2c3e50;
-                             -fx-font-size: 14px;
-                             -fx-padding: 10;
-                             -fx-border-color: rgba(165, 214, 220, 0.7);
-                             -fx-border-radius: 12;
-                             -fx-background-radius: 12;"/>
-
             <!-- Container untuk Image -->
             <VBox style="-fx-background-color: rgba(248, 249, 250, 0.9);
                         -fx-background-radius: 15;
@@ -63,6 +50,20 @@
                            pickOnBounds="true"
                            preserveRatio="true"/>
             </VBox>
+
+            <!-- Deskripsi -->
+            <TextArea fx:id="recommendationDescription"
+                      editable="false"
+                      wrapText="true"
+                      prefHeight="150.0"
+                      style="-fx-background-color: rgba(255, 255, 255, 0.9);
+                             -fx-text-fill: #2c3e50;
+                             -fx-font-size: 14px;
+                             -fx-padding: 10;
+                             -fx-border-color: rgba(165, 214, 220, 0.7);
+                             -fx-border-radius: 12;
+                             -fx-background-radius: 12;"/>
+
         </VBox>
 
         <!-- Bagian Kanan: Area Diskusi -->
@@ -72,7 +73,7 @@
                         prefWidth="470.0"
                         vbarPolicy="ALWAYS"
                         style="-fx-background: transparent;
-                              -fx-background-color: rgba(255, 255, 255, 0.6);">
+                              -fx-background-color: transparent;">
                 <content>
                     <VBox fx:id="discussionVBox"
                           alignment="TOP_CENTER"
@@ -82,17 +83,17 @@
                 </content>
                 <style>
                     .scroll-pane > .viewport {
-                        -fx-background-color: transparent;
+                    -fx-background-color: transparent;
                     }
                     .scroll-bar:vertical {
-                        -fx-background-color: transparent;
+                    -fx-background-color: transparent;
                     }
                     .scroll-bar:vertical .thumb {
-                        -fx-background-color: rgba(165, 214, 220, 0.6);
-                        -fx-background-radius: 8;
+                    -fx-background-color: rgba(165, 214, 220, 0.6);
+                    -fx-background-radius: 8;
                     }
                     .scroll-bar:vertical .thumb:hover {
-                        -fx-background-color: rgba(165, 214, 220, 0.8);
+                    -fx-background-color: rgba(165, 214, 220, 0.8);
                     }
                 </style>
             </ScrollPane>
