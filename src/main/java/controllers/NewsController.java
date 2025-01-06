@@ -37,6 +37,7 @@ public class NewsController {
     private Timeline searchDebounceTimeline;
     private Timeline autoRefreshTimeline;
     private LinkedHashMap<String, Image> imageCache;
+    private Stage stage;
     
     @FXML
     public void initialize() {
@@ -91,7 +92,7 @@ public class NewsController {
     private void refreshNews(String searchQuery) {
         Platform.runLater(() -> {
             try {
-                List<News> allNews = newsDAO.getAllNews(searchQuery);
+                List<News> allNews = searchQuery.isEmpty() ? newsDAO.getAllNews() : newsDAO.searchNews(searchQuery);
                 updateNewsDisplay(allNews);
             } catch (Exception e) {
                 System.err.println("Error refreshing news: " + e.getMessage());
@@ -206,6 +207,17 @@ public class NewsController {
         return card;
     }
 
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+    
+    @FXML
+    private void closeDialog() {
+        if (stage != null) {
+            stage.close();
+        }
+    }
+
     private void showNewsDetails(News news) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/news_details.fxml"));
@@ -213,24 +225,25 @@ public class NewsController {
             
             NewsDetailsController controller = loader.getController();
             
-            // Create stage with style before setting scene
-            Stage stage = new Stage(StageStyle.UNDECORATED);
-            stage.initModality(Modality.APPLICATION_MODAL);
-
+            // Create new stage
+            Stage detailStage = new Stage(StageStyle.UNDECORATED);
+            detailStage.initModality(Modality.APPLICATION_MODAL);
+            
+            // Set stage to controller before creating scene
+            controller.setStage(detailStage);
+            
             Scene scene = new Scene(root);
             scene.setFill(null);
-            stage.setScene(scene);
-
-            // Set news data after stage and scene are set
-            controller.setStage(stage);
+            detailStage.setScene(scene);
+            
             controller.setNews(news);
-
+            
             // Center the window
             Stage mainStage = (Stage) newsContainer.getScene().getWindow();
-            stage.setX(mainStage.getX() + (mainStage.getWidth() - 600) / 2);
-            stage.setY(mainStage.getY() + (mainStage.getHeight() - 500) / 2);
-
-            stage.show();
+            detailStage.setX(mainStage.getX() + (mainStage.getWidth() - 600) / 2);
+            detailStage.setY(mainStage.getY() + (mainStage.getHeight() - 500) / 2);
+            
+            detailStage.show();
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error showing news details: " + e.getMessage());
