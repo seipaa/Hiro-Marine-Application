@@ -107,7 +107,7 @@
                                             <HBox alignment="CENTER" spacing="10" style="-fx-padding: 10;">
                                                 <StackPane>
                                                     <TextField fx:id="speciesSearchField" prefWidth="300" promptText="Cari species..." style="-fx-background-color: rgba(7, 118, 146,0.5); -fx-text-fill: white; -fx-prompt-text-fill: #21d4c8; -fx-font-weight: bold; -fx-background-radius: 20; -fx-border-color: rgba(255,255,255,0.7); -fx-border-radius: 20; -fx-border-width: 2; -fx-padding: 8 35 8 15;" />
-                                                    <Button fx:id="clearSearchButton" onAction="#clearSearch" styleClass="clear-search-button" text="×" visible="false" StackPane.alignment="CENTER_RIGHT" />
+                                                    <Button fx:id="clearSearchButton" onAction="#clearSearch" styleClass="clear-search-button" stylesheets="@../styles/marinespecies.css" text="×" visible="false" StackPane.alignment="CENTER_RIGHT" />
                                                 </StackPane>
                                             </HBox>
 

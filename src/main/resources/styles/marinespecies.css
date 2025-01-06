@@ -154,7 +154,6 @@
     -fx-background-color: transparent;
 }
 
-/* Styling untuk tombol kembali dengan FontAwesome */
 .back-button {
     -fx-background-color: white;
     -fx-text-fill: #21d4c8;

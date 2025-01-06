@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
 
-<AnchorPane prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AdminMarineSpeciesController" stylesheets="@../styles/forms.css">
+<AnchorPane prefHeight="600.0" prefWidth="1000.0" stylesheets="@../styles/forms.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AdminMarineSpeciesController">
     <children>
         <!-- Background -->
         <Rectangle fill="#1a2238" height="767.0" width="1065.0" />
@@ -34,12 +34,12 @@
                     <TextField fx:id="speciesTypeField" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-background-radius: 8; -fx-border-color: #2196F3; -fx-border-radius: 8; -fx-padding: 12; -fx-font-size: 14px;" styleClass="form-field" />
 
                     <Label style="-fx-text-fill: white; -fx-font-size: 14px;" text="Deskripsi" />
-                    <TextArea fx:id="speciesDescriptionField" prefHeight="120.0" style="-fx-control-inner-background: #1a2238; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-color: rgba(255,255,255,0.1); -fx-border-color: #2196F3; -fx-border-width: 2; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10;" wrapText="true" styleClass="form-field" />
+                    <TextArea fx:id="speciesDescriptionField" prefHeight="120.0" style="-fx-control-inner-background: #1a2238; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-color: rgba(255,255,255,0.1); -fx-border-color: #2196F3; -fx-border-width: 2; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10;" styleClass="form-field" wrapText="true" />
 
                     <Label style="-fx-text-fill: white; -fx-font-size: 14px;" text="Gambar" />
                     <HBox spacing="10">
-                        <TextField fx:id="speciesImageUrlField" editable="false" promptText="Pilih gambar..." style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-background-radius: 8; -fx-border-color: #2196F3; -fx-border-radius: 8; -fx-padding: 12; -fx-font-size: 14px;" HBox.hgrow="ALWAYS" styleClass="form-field" />
-                        <Button onAction="#chooseImage" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 12 20; -fx-background-radius: 8; -fx-font-size: 14px;" text="Pilih File" styleClass="form-button">
+                        <TextField fx:id="speciesImageUrlField" editable="false" promptText="Pilih gambar..." style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-background-radius: 8; -fx-border-color: #2196F3; -fx-border-radius: 8; -fx-padding: 12; -fx-font-size: 14px;" styleClass="form-field" HBox.hgrow="ALWAYS" />
+                        <Button onAction="#chooseImage" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 12 20; -fx-background-radius: 8; -fx-font-size: 14px;" styleClass="form-button" text="Pilih File">
                             <cursor>
                                 <Cursor fx:constant="HAND" />
                             </cursor>
@@ -49,17 +49,17 @@
 
                 <!-- CRUD Buttons -->
                 <HBox spacing="15" style="-fx-padding: 10 0 0 0;">
-                    <Button onAction="#addSpecies" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 12 25; -fx-background-radius: 8; -fx-font-size: 14px;" text="Tambah" styleClass="form-button">
+                    <Button onAction="#addSpecies" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 12 25; -fx-background-radius: 8; -fx-font-size: 14px;" styleClass="form-button" text="Tambah">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
                     </Button>
-                    <Button onAction="#updateSpecies" style="-fx-background-color: #FFC107; -fx-text-fill: white; -fx-padding: 12 25; -fx-background-radius: 8; -fx-font-size: 14px;" text="Update" styleClass="form-button">
+                    <Button onAction="#updateSpecies" style="-fx-background-color: #FFC107; -fx-text-fill: white; -fx-padding: 12 25; -fx-background-radius: 8; -fx-font-size: 14px;" styleClass="form-button" text="Update">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
                     </Button>
-                    <Button onAction="#deleteSpecies" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 12 25; -fx-background-radius: 8; -fx-font-size: 14px;" text="Hapus" styleClass="form-button">
+                    <Button onAction="#deleteSpecies" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 12 25; -fx-background-radius: 8; -fx-font-size: 14px;" styleClass="form-button" text="Hapus">
                         <cursor>
                             <Cursor fx:constant="HAND" />
                         </cursor>
@@ -71,7 +71,7 @@
             <VBox spacing="25" style="-fx-padding: 20;">
                 <!-- Approved Species Section -->
                 <VBox spacing="15">
-                    <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #4CAF50; -fx-font-family: 'Arial';" text="Species Disetujui" />
+                    <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #4CAF50; -fx-font-family: 'Arial';" text="Species  List:" />
                     <ListView fx:id="approvedSpeciesListView" prefHeight="200" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 10;" styleClass="list-view">
                         <style>
                             .list-cell {

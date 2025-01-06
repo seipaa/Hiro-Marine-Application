@@ -72,7 +72,6 @@
 
 .tab:selected {
     -fx-background-color: rgba(255, 255, 255, 0.1);
-    -fx-background-radius: 30;
 }
 
 .tab:selected .tab-label {
@@ -83,11 +82,9 @@
     -fx-text-fill: white;
 }
 
-/* Remove tab borders */
 .tab-pane > .tab-header-area > .headers-region > .tab {
     -fx-background-insets: 0;
     -fx-border-width: 0;
-    -fx-background-radius: 30;
 }
 
 .tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
