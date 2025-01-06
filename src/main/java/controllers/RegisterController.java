@@ -13,18 +13,16 @@ import utils.DatabaseConnection;
 import utils.SceneUtils;
 
 public class RegisterController {
-    @FXML private TextField usernameField;
-    @FXML private PasswordField passwordField;
-    @FXML private PasswordField confirmPasswordField;
+    @FXML private TextField newUsernameField;
+    @FXML private PasswordField newPasswordField;
 
     @FXML
     private void handleRegister() {
-        String username = usernameField.getText().trim();
-        String password = passwordField.getText();
-        String confirmPassword = confirmPasswordField.getText();
+        String username = newUsernameField.getText().trim();
+        String password = newPasswordField.getText();
 
         // Validasi input dasar
-        if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+        if (username.isEmpty() || password.isEmpty()) {
             AlertUtils.showError("Error", "Semua field harus diisi!");
             return;
         }
@@ -47,12 +45,6 @@ public class RegisterController {
             return;
         }
 
-        // Validasi kecocokan password
-        if (!password.equals(confirmPassword)) {
-            AlertUtils.showError("Error", "Password tidak cocok!");
-            return;
-        }
-
         // Cek apakah username sudah ada
         if (isUsernameExists(username)) {
             AlertUtils.showError("Error", "Username sudah digunakan!");
@@ -61,21 +53,27 @@ public class RegisterController {
 
         try {
             // Insert user baru
-            String query = "INSERT INTO users (username, name, user_password, total_points, status, join_date) VALUES (?, ?, ?, 0, 'ACTIVE', CURRENT_TIMESTAMP)";
+            String query = "INSERT INTO users (username, name, user_password, total_points, status, join_date) " +
+                         "VALUES (?, ?, ?, 0, 'ACTIVE', CURRENT_TIMESTAMP)";
             
             try (Connection conn = DatabaseConnection.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setString(1, username);
                 stmt.setString(2, username); // Nama awal sama dengan username
                 stmt.setString(3, password);
-                stmt.executeUpdate();
+                
+                int result = stmt.executeUpdate();
+                if (result > 0) {
+                    AlertUtils.showInfo("Sukses", "Registrasi berhasil! Silakan login.");
+                    clearFields();
+                    goToLogin();
+                } else {
+                    AlertUtils.showError("Error", "Gagal mendaftar: Tidak ada data yang tersimpan");
+                }
             }
-
-            AlertUtils.showInfo("Success", "Registrasi berhasil! Silakan login.");
-            clearFields();
-            SceneUtils.changeScene(usernameField, "/fxml/login.fxml");
-            
         } catch (SQLException e) {
+            System.err.println("Error during registration: " + e.getMessage());
+            e.printStackTrace();
             AlertUtils.showError("Error", "Gagal mendaftar: " + e.getMessage());
         }
     }
@@ -90,6 +88,8 @@ public class RegisterController {
                 return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
+            System.err.println("Error checking username: " + e.getMessage());
+            e.printStackTrace();
             AlertUtils.showError("Error", "Gagal memeriksa username: " + e.getMessage());
         }
         return false;
@@ -97,12 +97,17 @@ public class RegisterController {
 
     @FXML
     private void goToLogin() {
-        SceneUtils.changeScene(usernameField, "/fxml/login.fxml");
+        try {
+            SceneUtils.changeScene(newUsernameField, "/fxml/login.fxml");
+        } catch (Exception e) {
+            System.err.println("Error navigating to login: " + e.getMessage());
+            e.printStackTrace();
+            AlertUtils.showError("Error", "Gagal membuka halaman login: " + e.getMessage());
+        }
     }
 
     private void clearFields() {
-        usernameField.clear();
-        passwordField.clear();
-        confirmPasswordField.clear();
+        newUsernameField.clear();
+        newPasswordField.clear();
     }
 }

@@ -11,11 +11,6 @@ import models.News;
 public class NewsDAO extends BaseDAO {
     private static final Logger LOGGER = Logger.getLogger(NewsDAO.class.getName());
 
-    private static final int CACHE_SIZE = 20;
-    private List<News> cachedNews = new ArrayList<>();
-    private long lastCacheUpdate = 0;
-    private static final long CACHE_DURATION = 10000; // 10 detik
-
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection con) {
         try {
             if (rs != null) rs.close();
@@ -49,60 +44,31 @@ public class NewsDAO extends BaseDAO {
     }
 
     public List<News> getAllNews() {
-        return getAllNews(null);
-    }
-
-    public List<News> getAllNews(String searchQuery) {
-        // Jika ada query pencarian, bypass cache
-        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            return getAllNewsFromDB(searchQuery);
-        }
-
-        // Gunakan cache jika masih valid
-        long currentTime = System.currentTimeMillis();
-        if (!cachedNews.isEmpty() && (currentTime - lastCacheUpdate) < CACHE_DURATION) {
-            return new ArrayList<>(cachedNews);
-        }
-
-        // Update cache
-        cachedNews = getAllNewsFromDB(null);
-        lastCacheUpdate = currentTime;
-        return new ArrayList<>(cachedNews);
-    }
-
-    private List<News> getAllNewsFromDB(String searchQuery) {
         List<News> newsList = new ArrayList<>();
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
             con = getConnection();
-            String query;
-            if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-                query = "SELECT * FROM news WHERE LOWER(title) LIKE ? OR LOWER(description) LIKE ? ORDER BY created_at DESC";
-                stmt = con.prepareStatement(query);
-                String searchPattern = "%" + searchQuery.toLowerCase() + "%";
-                stmt.setString(1, searchPattern);
-                stmt.setString(2, searchPattern);
-                System.out.println("Executing search query: " + query + " with pattern: " + searchPattern);
-            } else {
-                query = "SELECT * FROM news ORDER BY created_at DESC";
-                stmt = con.prepareStatement(query);
-                System.out.println("Executing query: " + query);
-            }
-            
+            // Ubah query untuk mengurutkan breaking news ke atas
+            String query = "SELECT * FROM news ORDER BY is_breaking_news DESC, created_at DESC";
+            stmt = con.prepareStatement(query);
             rs = stmt.executeQuery();
-            int count = 0;
             while (rs.next()) {
-                News news = createNewsFromResultSet(rs);
+                News news = new News(
+                        rs.getInt("id"),
+                        rs.getInt("admin_id"),
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        rs.getString("image_url"),
+                        rs.getTimestamp("created_at"),
+                        rs.getBoolean("is_breaking_news")
+                );
+                news.setPosition(rs.getInt("position"));
                 newsList.add(news);
-                count++;
-                System.out.println("Loaded news: " + news.getTitle() + " (Breaking: " + news.isBreakingNews() + ")");
             }
-            System.out.println("Total news loaded from database: " + count);
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error mendapatkan daftar berita", e);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error getting all news", e);
         } finally {
             closeResources(rs, stmt, con);
         }
@@ -135,71 +101,24 @@ public class NewsDAO extends BaseDAO {
     public boolean addNews(News news) {
         Connection con = null;
         PreparedStatement stmt = null;
-        ResultSet rs = null;
         try {
             con = getConnection();
-            con.setAutoCommit(false);
-
-            // Jika ini adalah berita utama, perbarui posisi berita utama yang ada
-            if (news.isBreakingNews()) {
-                String updatePosisi = "UPDATE news SET position = position + 1 WHERE is_breaking_news = true";
-                stmt = con.prepareStatement(updatePosisi);
-                stmt.executeUpdate();
-                stmt.close();
-            }
-
-            // Tambahkan berita baru
             String query = "INSERT INTO news (admin_id, title, description, image_url, created_at, is_breaking_news, position) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            stmt = con.prepareStatement(query);
             stmt.setInt(1, news.getAdminId());
             stmt.setString(2, news.getTitle());
             stmt.setString(3, news.getDescription());
             stmt.setString(4, news.getImageUrl());
             stmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
             stmt.setBoolean(6, news.isBreakingNews());
-            stmt.setInt(7, news.isBreakingNews() ? 1 : ambilPosisiBerikutnya());
+            stmt.setInt(7, news.getPosition());
 
-            int hasil = stmt.executeUpdate();
-            if (hasil > 0) {
-                rs = stmt.getGeneratedKeys();
-                if (rs.next()) {
-                    news.setId(rs.getInt(1));
-                }
-            }
-
-            con.commit();
-            return hasil > 0;
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            try {
-                if (con != null) con.rollback();
-            } catch (SQLException ex) {
-                LOGGER.log(Level.SEVERE, "Error saat rollback transaksi", ex);
-            }
-            LOGGER.log(Level.SEVERE, "Error saat menambah berita", e);
+            LOGGER.log(Level.SEVERE, "Error adding news", e);
             return false;
         } finally {
-            closeResources(rs, stmt, con);
-        }
-    }
-
-    private int ambilPosisiBerikutnya() {
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            con = getConnection();
-            String query = "SELECT COALESCE(MAX(position), 0) + 1 FROM news WHERE is_breaking_news = false";
-            stmt = con.prepareStatement(query);
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-            return 1;
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error saat mengambil posisi berikutnya", e);
-            return 1;
-        } finally {
-            closeResources(rs, stmt, con);
+            closeResources(null, stmt, con);
         }
     }
 
@@ -324,19 +243,16 @@ public class NewsDAO extends BaseDAO {
     }
 
     private News createNewsFromResultSet(ResultSet rs) throws SQLException {
-        int id = rs.getInt("id");
-        int adminId = rs.getInt("admin_id");
-        String title = rs.getString("title");
-        String description = rs.getString("description");
-        String imageUrl = rs.getString("image_url");
-        Timestamp createdAt = rs.getTimestamp("created_at");
-        boolean isBreakingNews = rs.getBoolean("is_breaking_news");
-        int position = rs.getInt("position");
-        
-        System.out.println("Creating news: ID=" + id + ", Title=" + title + ", ImageUrl=" + imageUrl + ", IsBreaking=" + isBreakingNews);
-        
-        News news = new News(id, adminId, title, description, imageUrl, createdAt, isBreakingNews);
-        news.setPosition(position);
+        News news = new News(
+                rs.getInt("id"),
+                rs.getInt("admin_id"),
+                rs.getString("title"),
+                rs.getString("description"),
+                rs.getString("image_url"),
+                rs.getTimestamp("created_at"),
+                rs.getBoolean("is_breaking_news")
+        );
+        news.setPosition(rs.getInt("position"));
         return news;
     }
 }

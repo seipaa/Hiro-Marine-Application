@@ -26,9 +26,9 @@
                     <Font name="Creato" size="30.0" />
                 </font>
             </Label>
-            <TextField fx:id="usernameField" prefHeight="40.0" promptText="Nama Pengguna" style="-fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 10;" />
-            <PasswordField fx:id="passwordField" prefHeight="40.0" promptText="Sandi" style="-fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 10;" />
-            <Button onAction="#handleLogin" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-background-radius: 15; -fx-padding: 15 30;" text="Masuk">
+            <TextField fx:id="usernameField" maxWidth="200.0" prefHeight="40.0" promptText="Nama Pengguna" style="-fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 10;" />
+            <PasswordField fx:id="passwordField" maxWidth="200.0" prefHeight="40.0" promptText="Sandi" style="-fx-background-color: white; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 10;" />
+            <Button onAction="#handleLogin" prefHeight="48.0" prefWidth="106.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-background-radius: 15; -fx-padding: 15 30;" text="Masuk">
                 <effect>
                     <DropShadow color="#007bff" radius="10" />
                 </effect>
@@ -49,7 +49,7 @@
         </VBox>
     </left>
     <right>
-        <VBox fx:id="rightVBox" prefWidth="640.0">
+        <VBox fx:id="rightVBox" maxHeight="720.0" maxWidth="640.0" prefHeight="720.0" prefWidth="640.0">
             <ImageView fitHeight="720.0" fitWidth="640.0" preserveRatio="true">
                 <image>
                     <Image url="@/images/login.jpg" />

@@ -8,6 +8,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import models.MarineSpecies;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -15,7 +17,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Modality;
 import utils.AlertUtils;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 
 public class MarineSpeciesController {
     @FXML private ImageView speciesImage;
@@ -26,7 +27,6 @@ public class MarineSpeciesController {
     @FXML private Button editButton;
     @FXML private Button deleteButton;
     @FXML private Button backButton;
-    @FXML private FontAwesomeIconView backIcon;
 
     private MainController mainController;
     private MarineSpecies currentSpecies;
@@ -39,37 +39,24 @@ public class MarineSpeciesController {
     public void setSpeciesData(MarineSpecies species) {
         this.currentSpecies = species;
         try {
-            String imageUrl = species.getImageUrl();
-            // Handle both formats: with and without "/images/" prefix
-            String imagePath = imageUrl.startsWith("/images/") ? 
-                imageUrl : "/images/" + imageUrl;
-            
-            System.out.println("Loading image from path: " + imagePath);
-            Image image = new Image(getClass().getResourceAsStream(imagePath));
-            speciesImage.setImage(image);
-        } catch (Exception e) {
-            System.err.println("Error loading image: " + species.getImageUrl());
-            try {
-                Image defaultImage = new Image(getClass().getResourceAsStream("/images/default_species.jpg"));
-                speciesImage.setImage(defaultImage);
-            } catch (Exception ex) {
-                System.err.println("Error loading default image");
+            // Ambil data gambar dari database
+            byte[] imageData = marineSpeciesDAO.getSpeciesImage(species.getId());
+            if (imageData != null && imageData.length > 0) {
+                Image image = new Image(new ByteArrayInputStream(imageData));
+                speciesImage.setImage(image);
+            } else {
+                // Jika tidak ada gambar, tampilkan placeholder
+                speciesImage.setStyle("-fx-background-color: #cccccc;");
             }
+        } catch (Exception e) {
+            System.err.println("Error loading image: " + e.getMessage());
+            speciesImage.setStyle("-fx-background-color: #cccccc;");
         }
         
         speciesName.setText(species.getName());
         speciesLatinName.setText(species.getLatinName());
         speciesType.setText(species.getType());
         speciesDescription.setText(species.getDescription());
-    }
-
-    @FXML
-    public void initialize() {
-        // Pastikan icon sudah diinisialisasi dengan benar
-        if (backIcon != null) {
-            backIcon.setSize("24");
-            backIcon.setStyleClass("back-button-icon");
-        }
     }
 
     @FXML
@@ -108,7 +95,7 @@ public class MarineSpeciesController {
     private void handleDelete() {
         if (AlertUtils.showConfirmation("Konfirmasi", "Apakah Anda yakin ingin menghapus species ini?")) {
             try {
-                marineSpeciesDAO.deleteMarineSpecies(currentSpecies.getId());
+                marineSpeciesDAO.deleteSpecies(currentSpecies.getId());
                 AlertUtils.showInfo("Sukses", "Species berhasil dihapus!");
                 
                 if (mainController != null) {
