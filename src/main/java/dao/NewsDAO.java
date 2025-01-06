@@ -50,25 +50,15 @@ public class NewsDAO extends BaseDAO {
         ResultSet rs = null;
         try {
             con = getConnection();
-            // Ubah query untuk mengurutkan breaking news ke atas
-            String query = "SELECT * FROM news ORDER BY is_breaking_news DESC, created_at DESC";
+            String query = "SELECT * FROM news ORDER BY created_at DESC";
             stmt = con.prepareStatement(query);
             rs = stmt.executeQuery();
             while (rs.next()) {
-                News news = new News(
-                        rs.getInt("id"),
-                        rs.getInt("admin_id"),
-                        rs.getString("title"),
-                        rs.getString("description"),
-                        rs.getString("image_url"),
-                        rs.getTimestamp("created_at"),
-                        rs.getBoolean("is_breaking_news")
-                );
-                news.setPosition(rs.getInt("position"));
-                newsList.add(news);
+                newsList.add(createNewsFromResultSet(rs));
             }
+            LOGGER.info("Successfully fetched all news.");
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error getting all news", e);
+            LOGGER.log(Level.SEVERE, "Error fetching news", e);
         } finally {
             closeResources(rs, stmt, con);
         }
@@ -243,16 +233,16 @@ public class NewsDAO extends BaseDAO {
     }
 
     private News createNewsFromResultSet(ResultSet rs) throws SQLException {
-        News news = new News(
-                rs.getInt("id"),
-                rs.getInt("admin_id"),
-                rs.getString("title"),
-                rs.getString("description"),
-                rs.getString("image_url"),
-                rs.getTimestamp("created_at"),
-                rs.getBoolean("is_breaking_news")
-        );
-        news.setPosition(rs.getInt("position"));
-        return news;
+        int id = rs.getInt("id");
+        int adminId = rs.getInt("admin_id");
+        String title = rs.getString("title");
+        String description = rs.getString("description");
+        String imageUrl = rs.getString("image_url");
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        boolean isBreakingNews = rs.getBoolean("is_breaking_news");
+
+        LOGGER.info("Fetched news with ID: " + id + ", Title: " + title + ", Created At: " + createdAt);
+
+        return new News(id, adminId, title, description, imageUrl, createdAt, isBreakingNews);
     }
 }
