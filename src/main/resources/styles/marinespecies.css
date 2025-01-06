@@ -1,7 +1,5 @@
 /* Import custom fonts */
 @font-face {
-    font-family: 'CreatoDisplay-Bold';
-    src: url('../fonts/CreatoDisplay-Bold.otf');
 }
 
 /* Styling untuk TextArea */
@@ -238,4 +236,30 @@ AnchorPane {
 AnchorPane {
     -fx-background-radius: 15;
     -fx-background-insets: 0;
+}
+
+.species-card {
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-background-radius: 15;
+    -fx-padding: 10;
+    -fx-alignment: center;
+    -fx-spacing: 10;
+}
+
+.species-card:hover {
+    -fx-background-color: rgba(255,255,255,0.2);
+    -fx-cursor: hand;
+}
+
+.species-card ImageView {
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);
+}
+
+.species-card Label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+    -fx-alignment: center;
 } 

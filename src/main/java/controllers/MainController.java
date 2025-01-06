@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -285,16 +286,82 @@ public class MainController {
     }
 
     void refreshSpeciesView() {
-        if (speciesFlowPane != null) {
+        try {
             speciesFlowPane.getChildren().clear();
             ObservableList<MarineSpecies> speciesList = marineSpeciesDAO.getAllApprovedSpecies();
-
+            
             for (MarineSpecies species : speciesList) {
-                VBox card = createSpeciesCard(species);
-                if (card != null) {
-                    speciesFlowPane.getChildren().add(card);
+                // Buat VBox untuk menampung gambar dan nama
+                VBox speciesCard = new VBox(10); // spacing 10 pixels
+                speciesCard.setAlignment(Pos.CENTER);
+                speciesCard.setPrefWidth(200);
+                speciesCard.setPrefHeight(250);
+                speciesCard.getStyleClass().add("species-card");
+                speciesCard.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
+                                   "-fx-background-radius: 15; " +
+                                   "-fx-padding: 10;");
+
+                // Buat ImageView untuk gambar species
+                ImageView imageView = new ImageView();
+                imageView.setFitWidth(180);
+                imageView.setFitHeight(180);
+                imageView.setPreserveRatio(true);
+                
+                // Load gambar dari database
+                try {
+                    byte[] imageData = marineSpeciesDAO.getSpeciesImage(species.getId());
+                    if (imageData != null && imageData.length > 0) {
+                        Image image = new Image(new ByteArrayInputStream(imageData));
+                        imageView.setImage(image);
+                    } else {
+                        // Load default image jika tidak ada gambar
+                        Image defaultImage = new Image(getClass().getResourceAsStream("/images/default_species.jpg"));
+                        imageView.setImage(defaultImage);
+                    }
+                } catch (SQLException e) {
+                    System.err.println("Error loading species image: " + e.getMessage());
+                    // Load default image jika terjadi error
+                    Image defaultImage = new Image(getClass().getResourceAsStream("/images/default_species.jpg"));
+                    imageView.setImage(defaultImage);
                 }
+
+                // Buat label untuk nama species
+                Label nameLabel = new Label(species.getName());
+                nameLabel.setStyle("-fx-text-fill: white; " +
+                                 "-fx-font-size: 14px; " +
+                                 "-fx-font-weight: bold; " +
+                                 "-fx-wrap-text: true; " +
+                                 "-fx-alignment: center;");
+                nameLabel.setWrapText(true);
+                nameLabel.setMaxWidth(180);
+                nameLabel.setAlignment(Pos.CENTER);
+
+                // Tambahkan imageView dan label ke card
+                speciesCard.getChildren().addAll(imageView, nameLabel);
+
+                // Tambahkan hover effect
+                speciesCard.setOnMouseEntered(e -> 
+                    speciesCard.setStyle("-fx-background-color: rgba(255,255,255,0.2); " +
+                                       "-fx-background-radius: 15; " +
+                                       "-fx-padding: 10; " +
+                                       "-fx-cursor: hand;")
+                );
+
+                speciesCard.setOnMouseExited(e -> 
+                    speciesCard.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
+                                       "-fx-background-radius: 15; " +
+                                       "-fx-padding: 10;")
+                );
+
+                // Tambahkan event handler untuk membuka detail species
+                speciesCard.setOnMouseClicked(e -> showSpeciesDetails(species));
+
+                // Tambahkan card ke FlowPane
+                speciesFlowPane.getChildren().add(speciesCard);
             }
+        } catch (Exception e) {
+            System.err.println("Error refreshing species view: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -489,6 +556,38 @@ public class MainController {
                 });
             }
         });
+    }
+
+    private void showSpeciesDetails(MarineSpecies species) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/marinespecies.fxml"));
+            Parent root = loader.load();
+
+            MarineSpeciesController controller = loader.getController();
+            controller.setMainController(this);
+            controller.setSpeciesData(species);
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle(species.getName());
+            
+            // Set scene dengan background transparan
+            Scene scene = new Scene(root);
+            scene.setFill(null);
+            stage.setScene(scene);
+            
+            // Set window style
+            stage.initStyle(StageStyle.TRANSPARENT);
+            
+            // Tambahkan icon aplikasi
+            stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/logo.png")));
+            
+            stage.show();
+        } catch (IOException e) {
+            System.err.println("Error showing species details: " + e.getMessage());
+            e.printStackTrace();
+            AlertUtils.showError("Error", "Gagal menampilkan detail species: " + e.getMessage());
+        }
     }
 
     @FXML
