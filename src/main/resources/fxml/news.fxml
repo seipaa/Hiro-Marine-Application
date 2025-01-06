@@ -1,40 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.effect.*?>
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="controllers.NewsController"
-      spacing="20">
+      spacing="20"
+      style="-fx-background-color: linear-gradient(to bottom, #1a4c6b, #0d2435);">
+      
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
 
-    <!-- Search Bar -->
-    <VBox style="-fx-padding: 20px; -fx-alignment: center; -fx-background-color: transparent;">
-        <TextField fx:id="searchField"
-                   promptText="Cari berita..."
-                   style="-fx-pref-width: 300px; -fx-background-radius: 20px; -fx-padding: 8px 15px; -fx-background-color: rgba(255, 255, 255, 0.9); -fx-prompt-text-fill: #666666;"/>
-    </VBox>
+    <!-- Search Bar with Icon -->
+    <HBox alignment="CENTER" spacing="10">
+        <StackPane>
+            <TextField fx:id="searchField" 
+                      promptText="🔍 Search news..."
+                      style="-fx-background-color: rgba(255, 255, 255, 0.15);
+                             -fx-text-fill: white;
+                             -fx-prompt-text-fill: #e0e0e0;
+                             -fx-background-radius: 20;
+                             -fx-padding: 8 15;
+                             -fx-pref-width: 300;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);"
+                      HBox.hgrow="NEVER"/>
+        </StackPane>
+    </HBox>
 
     <!-- Breaking News Section -->
-    <VBox fx:id="breakingNewsContainer"
-          style="-fx-background-color: transparent; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 15, 0, 0, 0); -fx-background-radius: 15px; -fx-min-height: 400px;">
-        <padding>
-            <Insets top="20" right="20" bottom="20" left="20"/>
-        </padding>
+    <VBox spacing="15">
+        <Label text="BREAKING NEWS" 
+               style="-fx-font-size: 24;
+                      -fx-font-weight: bold;
+                      -fx-text-fill: #dc3545;
+                      -fx-effect: dropshadow(gaussian, rgba(220,53,69,0.3), 10, 0, 0, 0);"/>
+                      
+        <ScrollPane fitToWidth="true" 
+                   style="-fx-background: transparent;
+                          -fx-background-color: transparent;
+                          -fx-padding: 0;">
+            <VBox fx:id="breakingNewsContainer" 
+                  spacing="20"
+                  style="-fx-background-color: transparent;"/>
+        </ScrollPane>
     </VBox>
 
-    <!-- News Grid -->
-    <ScrollPane fitToWidth="true"
-                style="-fx-background: transparent; -fx-background-color: transparent;">
-        <GridPane fx:id="newsGrid"
-                  style="-fx-hgap: 20px; -fx-vgap: 20px; -fx-padding: 20px;">
-            <columnConstraints>
-                <ColumnConstraints percentWidth="33.33"/>
-                <ColumnConstraints percentWidth="33.33"/>
-                <ColumnConstraints percentWidth="33.33"/>
-            </columnConstraints>
-        </GridPane>
+    <!-- Regular News Section -->
+    <ScrollPane fx:id="scrollPane" 
+                fitToWidth="true" 
+                style="-fx-background: transparent;
+                       -fx-background-color: transparent;
+                       -fx-padding: 0;">
+        <VBox fx:id="newsContainer" 
+              spacing="20"
+              style="-fx-background-color: transparent;"/>
     </ScrollPane>
 
 </VBox>

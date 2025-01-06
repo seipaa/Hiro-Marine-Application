@@ -1,50 +1,119 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.geometry.*?>
 
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.shape.Rectangle?>
-<?import javafx.scene.control.ScrollPane?>
-<?import java.net.URL?>
+<BorderPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controllers.NewsDetailsController"
+           prefWidth="600"
+           prefHeight="500"
+           style="-fx-background-color: linear-gradient(to bottom, #1976D2, #0D47A1);">
 
-<AnchorPane prefHeight="500.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.NewsDetailsController">
-    <!-- Background Image -->
-    <ImageView fitHeight="500.0" fitWidth="600.0" preserveRatio="false">
-        <image>
-            <Image url="@../images/background_news.jpg"/>
-        </image>
-    </ImageView>
+    <!-- Title Bar -->
+    <top>
+        <HBox fx:id="titleBar" alignment="CENTER_LEFT" style="-fx-background-color: #2196F3; -fx-padding: 5;">
+            <Label text="Detail Berita" 
+                   style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: white;"
+                   HBox.hgrow="ALWAYS">
+                <HBox.margin>
+                    <Insets left="10"/>
+                </HBox.margin>
+            </Label>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="✕" 
+                    onAction="#closeDialog"
+                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14; -fx-cursor: hand;">
+                <HBox.margin>
+                    <Insets right="10"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+    </top>
 
-    <!-- Dark Overlay -->
-    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#00000080" height="500.0" opacity="0.5" width="600.0"/>
-
-    <ScrollPane fitToWidth="true"
-                styleClass="news-scroll-pane"
-                style="-fx-background: transparent;
-                       -fx-background-color: transparent;
-                       -fx-padding: 10;
-                       -fx-background-insets: 0;
-                       -fx-border-width: 0;"
-                prefHeight="500.0" prefWidth="600.0">
-        <stylesheets>
-            <URL value="@../styles/scrollbarnews.css" />
-        </stylesheets>
-        <content>
-            <VBox alignment="CENTER" spacing="20" style="-fx-padding: 20; -fx-background-color: transparent;">
-                <!-- News Image -->
-                <ImageView fx:id="newsImageView" fitHeight="250.0" fitWidth="500.0" preserveRatio="true"/>
-
+    <!-- Main Content -->
+    <center>
+        <ScrollPane fitToWidth="true" 
+                   style="-fx-background: transparent; 
+                          -fx-background-color: transparent;">
+            <style>
+                .scroll-bar:vertical {
+                    -fx-background-color: transparent;
+                }
+                .scroll-bar:vertical .track {
+                    -fx-background-color: rgba(25, 118, 210, 0.3);
+                }
+                .scroll-bar:vertical .thumb {
+                    -fx-background-color: rgba(33, 150, 243, 0.6);
+                    -fx-background-radius: 10;
+                }
+                .scroll-bar:vertical .increment-button,
+                .scroll-bar:vertical .decrement-button {
+                    -fx-background-color: transparent;
+                }
+                .scroll-bar:vertical .increment-arrow,
+                .scroll-bar:vertical .decrement-arrow {
+                    -fx-background-color: rgba(33, 150, 243, 0.6);
+                }
+            </style>
+            <VBox spacing="15" style="-fx-padding: 20;" alignment="CENTER">
                 <!-- Title -->
-                <Label fx:id="titleLabel" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white; -fx-wrap-text: true; -fx-alignment: center;" prefWidth="500.0"/>
+                <Label fx:id="titleLabel" 
+                       style="-fx-font-size: 18; 
+                              -fx-font-weight: bold; 
+                              -fx-text-fill: white; 
+                              -fx-wrap-text: true;
+                              -fx-text-alignment: center;"
+                       alignment="CENTER"
+                       maxWidth="550"/>
 
-                <!-- Description -->
-                <Label fx:id="descriptionLabel" style="-fx-font-size: 14px; -fx-text-fill: white; -fx-wrap-text: true;" prefWidth="500.0"/>
+                <!-- News Image -->
+                <ImageView fx:id="newsImage" 
+                           fitWidth="400" 
+                           fitHeight="250" 
+                           preserveRatio="true">
+                    <VBox.margin>
+                        <Insets top="10" bottom="10"/>
+                    </VBox.margin>
+                </ImageView>
 
                 <!-- Admin Info -->
-                <Label fx:id="adminLabel" style="-fx-font-size: 14px; -fx-text-fill: #4CAF50;"/>
+                <HBox spacing="5" alignment="CENTER">
+                    <Label text="Posted by Admin ID: " 
+                           style="-fx-font-size: 12; -fx-text-fill: #E1F5FE;"/>
+                    <Label fx:id="adminLabel" 
+                           style="-fx-font-size: 12; -fx-text-fill: white;"/>
+                    <Label text=" on " 
+                           style="-fx-font-size: 12; -fx-text-fill: #E1F5FE;"/>
+                    <Label fx:id="dateLabel" 
+                           style="-fx-font-size: 12; -fx-text-fill: white;"/>
+                </HBox>
+
+                <!-- Description -->
+                <Label fx:id="descriptionLabel" 
+                       style="-fx-font-size: 14; 
+                              -fx-text-fill: white; 
+                              -fx-wrap-text: true;"
+                       maxWidth="550"/>
+
+                <!-- Close Button -->
+                <StackPane>
+                    <Circle radius="25" fill="white" opacity="0.9"/>
+                    <Button text="Tutup" 
+                            onAction="#closeDialog"
+                            style="-fx-background-color: transparent;
+                                   -fx-text-fill: #1976D2;
+                                   -fx-font-size: 14;
+                                   -fx-font-weight: bold;
+                                   -fx-cursor: hand;">
+                        <StackPane.margin>
+                            <Insets top="20"/>
+                        </StackPane.margin>
+                    </Button>
+                </StackPane>
             </VBox>
-        </content>
-    </ScrollPane>
-</AnchorPane>
+        </ScrollPane>
+    </center>
+</BorderPane>

@@ -77,11 +77,11 @@ public class LoginController {
 
         MainController mainController = loader.getController();
         if (user != null) {
+            mainController.setAdmin(false);  // Set isAdmin dulu
             mainController.setCurrentUser(user);
-            mainController.setAdmin(false);
         } else if (admin != null) {
+            mainController.setAdmin(true);  // Set isAdmin dulu
             mainController.setCurrentAdmin(admin);
-            mainController.setAdmin(true);
         }
 
         Stage stage = (Stage) usernameField.getScene().getWindow();

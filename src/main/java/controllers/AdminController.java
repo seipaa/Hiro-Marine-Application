@@ -93,17 +93,17 @@ public class AdminController {
             showError("Error", "Title and description cannot be empty.");
             return;
         }
-
-        News news = new News(
-                0,                    // id
-                1,                    // adminId
-                title,               // title
-                description,         // description
-                "",                  // imageUrl
-                new Timestamp(System.currentTimeMillis()), // createdAt
-                false                // isBreakingNews
-        );
-        news.setPosition(0);     // position default
+      
+       News news = new News(
+           0,                    // id
+           1,                    // adminId
+           title,               // title
+           description,         // description
+           "",                  // imageUrl
+           new Timestamp(System.currentTimeMillis()), // createdAt
+           false                // isBreakingNews
+       );
+       news.setPosition(0);     // position default
     }
 
     @FXML
@@ -225,13 +225,13 @@ public class AdminController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
-
+            
             // Set controller untuk popup
             Object controller = loader.getController();
             if (controller instanceof AdminController) {
                 ((AdminController) controller).setMainController(mainController);
             }
-
+            
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle(title);

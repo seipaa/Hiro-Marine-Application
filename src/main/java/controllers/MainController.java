@@ -23,13 +23,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -151,6 +145,9 @@ public class MainController {
     private NewsDAO newsDAO;
     private AdminController adminController;
     private MarineSpeciesDAO marineSpeciesDAO = new MarineSpeciesDAO();
+
+    private double xOffset = 0;
+    private double yOffset = 0;
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
@@ -822,12 +819,25 @@ public class MainController {
             controller.setNews(news);
 
             Stage stage = new Stage();
+            stage.initStyle(StageStyle.UNDECORATED);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("News Details");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
+
+            Scene scene = new Scene(root);
+            scene.setFill(null);
+            stage.setScene(scene);
+
+            // Center the window
+            stage.setOnShown(e -> {
+                Stage mainStage = (Stage) contentPane.getScene().getWindow();
+                stage.setX(mainStage.getX() + (mainStage.getWidth() - stage.getWidth()) / 2);
+                stage.setY(mainStage.getY() + (mainStage.getHeight() - stage.getHeight()) / 2);
+            });
+
+            stage.show();
         } catch (Exception e) {
             e.printStackTrace();
+            showError("Error", "Failed to show news details: " + e.getMessage());
         }
     }
 
@@ -919,17 +929,32 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_news.fxml"));
             Parent root = loader.load();
 
+            Stage stage = new Stage(StageStyle.UNDECORATED);
+            stage.initModality(Modality.APPLICATION_MODAL);
+
+            // Set window size
+            Scene scene = new Scene(root, 1000, 700);
+            stage.setScene(scene);
+
+            // Get the controller and set the main controller reference
             NewsAdminController controller = loader.getController();
             controller.setMainController(this);
 
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("News Admin Panel");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
+            // Add window dragging
+            root.setOnMousePressed(event -> {
+                xOffset = event.getSceneX();
+                yOffset = event.getSceneY();
+            });
+
+            root.setOnMouseDragged(event -> {
+                stage.setX(event.getScreenX() - xOffset);
+                stage.setY(event.getScreenY() - yOffset);
+            });
+
+            stage.show();
         } catch (Exception e) {
             e.printStackTrace();
-            AlertUtils.showError("Error", "Failed to load News Admin panel.");
+            AlertUtils.showError("Error", "Failed to load News Admin panel: " + e.getMessage());
         }
     }
 
@@ -1319,5 +1344,27 @@ public class MainController {
     private void clearSearch() {
         speciesSearchField.clear();
         filterSpecies("");
+    }
+
+    public void handleNewsUpdated() {
+        // Refresh news content
+        Platform.runLater(() -> {
+            try {
+                // Refresh news content in the main view
+                NewsDAO newsDAO = new NewsDAO();
+                List<News> latestNews = newsDAO.getAllNews();
+                // Update your UI components here with the latest news
+                refreshNewsContent(latestNews);
+            } catch (Exception e) {
+                e.printStackTrace();
+                AlertUtils.showError("Error", "Gagal memperbarui tampilan berita: " + e.getMessage());
+            }
+        });
+    }
+
+    private void refreshNewsContent(List<News> newsList) {
+        // Implement the UI update logic here
+        // This should update your news display in the main view
+        // For example, updating a ListView, GridPane, or whatever container you use to display news
     }
 }

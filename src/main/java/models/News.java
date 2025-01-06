@@ -12,7 +12,13 @@ public class News {
     private Timestamp createdAt;
     private boolean isBreakingNews;
 
-    // Constructor
+    // Default constructor
+    public News() {
+        this.createdAt = new Timestamp(System.currentTimeMillis());
+        this.isBreakingNews = false;
+    }
+
+    // Constructor with parameters
     public News(int id, int adminId, String title, String description, String imageUrl, Timestamp createdAt, boolean isBreakingNews) {
         this.id = id;
         this.adminId = adminId;
