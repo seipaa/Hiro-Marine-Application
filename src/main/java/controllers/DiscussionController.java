@@ -197,3 +197,8 @@ public class DiscussionController {
             AlertUtils.showError("Error", "Failed to post discussion");
         }
     }
+
+    private String formatTimestamp(LocalDateTime timestamp) {
+        return timestamp.format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
+    }
+}
