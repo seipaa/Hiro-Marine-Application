@@ -32,6 +32,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.scene.Cursor;
 import models.*;
 import utils.AlertUtils;
 import utils.ChallengeDetailsFetcher;
@@ -242,6 +243,9 @@ public class MainController {
         setupButtonHoverEffect(recommendationAdminButton, "#FF9800", "#FFC107");
         setupButtonHoverEffect(challengeAdminButton, "#F44336", "#E57373");
         setupButtonHoverEffect(userAdminButton, "#9C27B0", "#BA68C8");
+
+        newsDAO = new NewsDAO();
+        loadNews();
     }
 
     private void filterSpecies(String newValue) {
@@ -249,7 +253,7 @@ public class MainController {
         ObservableList<MarineSpecies> filteredSpecies;
 
         if (newValue == null || newValue.isEmpty()) {
-            filteredSpecies = marineSpeciesDAO.getAllApprovedSpecies();
+            filteredSpecies = marineSpeciesDAO.getAllMarineSpecies();
         } else {
             filteredSpecies = marineSpeciesDAO.searchSpecies(newValue);
         }
@@ -287,7 +291,7 @@ public class MainController {
     void refreshSpeciesView() {
         if (speciesFlowPane != null) {
             speciesFlowPane.getChildren().clear();
-            ObservableList<MarineSpecies> speciesList = marineSpeciesDAO.getAllApprovedSpecies();
+            ObservableList<MarineSpecies> speciesList = marineSpeciesDAO.getAllMarineSpecies();
 
             for (MarineSpecies species : speciesList) {
                 VBox card = createSpeciesCard(species);
@@ -794,9 +798,13 @@ public class MainController {
     }
 
     public void loadNews() {
-        NewsDAO newsDAO = new NewsDAO();
-        List<News> newsList = newsDAO.getAllNews();
-        // Display news in the UI
+        try {
+            List<News> newsList = newsDAO.getAllNews();
+            displayNews(newsList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Error", "Gagal memuat berita: " + e.getMessage());
+        }
     }
 
     public void loadRecommendations() {
@@ -1213,7 +1221,7 @@ public class MainController {
 
             for (News news : allNews) {
                 // Buat card berita
-                StackPane newsCard = createNewsCard(news);
+                StackPane newsCard = createNewsCardSimple(news);
                 newsContainer.getChildren().add(newsCard);
             }
 
@@ -1227,7 +1235,7 @@ public class MainController {
         }
     }
 
-    private StackPane createNewsCard(News news) {
+    private StackPane createNewsCardSimple(News news) {
         StackPane card = new StackPane();
         card.setPrefHeight(140);
         card.setPrefWidth(635);
@@ -1282,65 +1290,6 @@ public class MainController {
     }
 
     @FXML
-    public void showAddSpeciesDialog(ActionEvent event) {
-        System.out.println("showAddSpeciesDialog called");
-        try {
-            System.out.println("Loading add_species_dialog.fxml");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/add_species_dialog.fxml"));
-            Parent root = loader.load();
-            System.out.println("FXML loaded successfully");
-
-            AddSpeciesController controller = loader.getController();
-            controller.setMainController(this);
-
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Add New Species");
-            stage.setScene(new Scene(root));
-            
-            System.out.println("Showing add species dialog");
-            stage.showAndWait();
-
-            System.out.println("Dialog closed, refreshing view");
-            refreshSpeciesView();
-        } catch (IOException e) {
-            System.err.println("Error showing add species dialog: " + e.getMessage());
-            e.printStackTrace();
-            AlertUtils.showError("Error", "Failed to open add species dialog: " + e.getMessage());
-        }
-    }
-
-    private Button createAddSpeciesButton() {
-        Button addButton = new Button("+");
-        addButton.setPrefSize(200, 250);
-        addButton.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
-                "-fx-text-fill: white; " +
-                "-fx-font-size: 40px; " +
-                "-fx-background-radius: 15; " +
-                "-fx-cursor: hand;");
-
-        addButton.setOnMouseEntered(e -> 
-            addButton.setStyle("-fx-background-color: rgba(255,255,255,0.2); " +
-                    "-fx-text-fill: white; " +
-                    "-fx-font-size: 40px; " +
-                    "-fx-background-radius: 15; " +
-                    "-fx-cursor: hand;")
-        );
-
-        addButton.setOnMouseExited(e -> 
-            addButton.setStyle("-fx-background-color: rgba(255,255,255,0.1); " +
-                    "-fx-text-fill: white; " +
-                    "-fx-font-size: 40px; " +
-                    "-fx-background-radius: 15; " +
-                    "-fx-cursor: hand;")
-        );
-
-        ActionEvent event = null;
-        addButton.setOnAction(e -> showAddSpeciesDialog(event));
-        return addButton;
-    }
-
-    @FXML
     private void clearSearch() {
         speciesSearchField.clear();
         filterSpecies("");
@@ -1366,5 +1315,230 @@ public class MainController {
         // Implement the UI update logic here
         // This should update your news display in the main view
         // For example, updating a ListView, GridPane, or whatever container you use to display news
+    }
+
+    private void displayNews(List<News> newsList) {
+        newsContainer.getChildren().clear();
+        
+        // Pisahkan breaking news dan berita biasa
+        List<News> breakingNews = newsList.stream()
+                .filter(News::isBreakingNews)
+                .toList();
+        
+        List<News> regularNews = newsList.stream()
+                .filter(news -> !news.isBreakingNews())
+                .toList();
+
+        // Tampilkan breaking news sebagai headline
+        if (!breakingNews.isEmpty()) {
+            VBox headlineSection = new VBox(10);
+            headlineSection.setPadding(new Insets(0, 0, 20, 0));
+            
+            Label breakingNewsLabel = new Label("BREAKING NEWS");
+            breakingNewsLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #ff3d3d;");
+            headlineSection.getChildren().add(breakingNewsLabel);
+
+            for (News news : breakingNews) {
+                StackPane newsCard = createBreakingNewsCard(news);
+                headlineSection.getChildren().add(newsCard);
+            }
+            
+            newsContainer.getChildren().add(headlineSection);
+        }
+
+        // Tampilkan berita reguler
+        if (!regularNews.isEmpty()) {
+            VBox regularNewsSection = new VBox(10);
+            regularNewsSection.setPadding(new Insets(20, 0, 0, 0));
+            
+            Label latestNewsLabel = new Label("LATEST NEWS");
+            latestNewsLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+            regularNewsSection.getChildren().add(latestNewsLabel);
+
+            // Buat grid untuk berita reguler
+            GridPane newsGrid = new GridPane();
+            newsGrid.setHgap(20);
+            newsGrid.setVgap(20);
+
+            int col = 0;
+            int row = 0;
+            for (News news : regularNews) {
+                StackPane newsCard = createRegularNewsCard(news);
+                newsGrid.add(newsCard, col, row);
+                
+                col++;
+                if (col == 2) { // 2 kolom per baris
+                    col = 0;
+                    row++;
+                }
+            }
+            
+            regularNewsSection.getChildren().add(newsGrid);
+            newsContainer.getChildren().add(regularNewsSection);
+        }
+    }
+
+    private StackPane createBreakingNewsCard(News news) {
+        StackPane card = new StackPane();
+        card.setPrefHeight(300);
+        card.setPrefWidth(900);
+        card.setStyle("-fx-background-color: transparent;");
+
+        // Image
+        ImageView imageView = setupNewsImage(news, 900, 300);
+        
+        // Dark overlay dengan gradien merah untuk breaking news
+        Rectangle overlay = new Rectangle(900, 300);
+        overlay.setFill(Color.rgb(255, 0, 0, 0.3));
+        
+        // Content container
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(20));
+        content.setAlignment(Pos.BOTTOM_LEFT);
+
+        // Breaking news badge
+        Label breakingBadge = new Label("BREAKING");
+        breakingBadge.setStyle(
+            "-fx-background-color: #ff3d3d;" +
+            "-fx-text-fill: white;" +
+            "-fx-font-weight: bold;" +
+            "-fx-padding: 5 10;" +
+            "-fx-background-radius: 5;"
+        );
+
+        // Title
+        Label titleLabel = new Label(news.getTitle());
+        titleLabel.setStyle(
+            "-fx-font-size: 24px;" +
+            "-fx-font-weight: bold;" +
+            "-fx-text-fill: white;"
+        );
+        titleLabel.setWrapText(true);
+        titleLabel.setMaxWidth(850);
+
+        // Description preview
+        Label descLabel = new Label(news.getDescription());
+        descLabel.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: white;"
+        );
+        descLabel.setWrapText(true);
+        descLabel.setMaxWidth(850);
+        descLabel.setMaxHeight(60);
+
+        content.getChildren().addAll(breakingBadge, titleLabel, descLabel);
+
+        // Add hover effect
+        card.setOnMouseEntered(e -> {
+            overlay.setFill(Color.rgb(255, 0, 0, 0.4));
+            card.setCursor(Cursor.HAND);
+        });
+        
+        card.setOnMouseExited(e -> {
+            overlay.setFill(Color.rgb(255, 0, 0, 0.3));
+            card.setCursor(Cursor.DEFAULT);
+        });
+
+        // Click event
+        card.setOnMouseClicked(e -> showNewsDetails(news));
+
+        card.getChildren().addAll(imageView, overlay, content);
+        return card;
+    }
+
+    private StackPane createRegularNewsCard(News news) {
+        StackPane card = new StackPane();
+        card.setPrefHeight(200);
+        card.setPrefWidth(440);
+        card.setStyle("-fx-background-color: transparent;");
+
+        // Image
+        ImageView imageView = setupNewsImage(news, 440, 200);
+        
+        // Dark overlay
+        Rectangle overlay = new Rectangle(440, 200);
+        overlay.setFill(Color.rgb(42, 60, 95, 0.85));
+
+        // Content
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(15));
+        content.setAlignment(Pos.BOTTOM_LEFT);
+
+        // Title
+        Label titleLabel = new Label(news.getTitle());
+        titleLabel.setStyle(
+            "-fx-font-size: 16px;" +
+            "-fx-font-weight: bold;" +
+            "-fx-text-fill: white;"
+        );
+        titleLabel.setWrapText(true);
+        titleLabel.setMaxWidth(410);
+
+        // Date
+        Label dateLabel = new Label(formatNewsDate(news.getCreatedAt()));
+        dateLabel.setStyle(
+            "-fx-font-size: 12px;" +
+            "-fx-text-fill: #cccccc;"
+        );
+
+        content.getChildren().addAll(titleLabel, dateLabel);
+
+        // Hover effect
+        card.setOnMouseEntered(e -> {
+            overlay.setFill(Color.rgb(42, 60, 95, 0.75));
+            card.setCursor(Cursor.HAND);
+        });
+        
+        card.setOnMouseExited(e -> {
+            overlay.setFill(Color.rgb(42, 60, 95, 0.85));
+            card.setCursor(Cursor.DEFAULT);
+        });
+
+        // Click event
+        card.setOnMouseClicked(e -> showNewsDetails(news));
+
+        card.getChildren().addAll(imageView, overlay, content);
+        return card;
+    }
+
+    private ImageView setupNewsImage(News news, double width, double height) {
+        ImageView imageView = new ImageView();
+        imageView.setFitWidth(width);
+        imageView.setFitHeight(height);
+        imageView.setPreserveRatio(false);
+
+        try {
+            String imageUrl = news.getImageUrl();
+            Image image;
+            
+            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                if (imageUrl.startsWith("http") || imageUrl.startsWith("file:")) {
+                    image = new Image(imageUrl, true);
+                } else {
+                    image = new Image(getClass().getResourceAsStream("/images/" + imageUrl));
+                }
+                
+                if (image == null || image.isError()) {
+                    image = new Image(getClass().getResourceAsStream("/images/default_news.jpg"));
+                }
+            } else {
+                image = new Image(getClass().getResourceAsStream("/images/default_news.jpg"));
+            }
+            
+            if (image != null && !image.isError()) {
+                imageView.setImage(image);
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading news image: " + e.getMessage());
+            // Fallback to default image or leave empty
+        }
+
+        return imageView;
+    }
+
+    private String formatNewsDate(java.sql.Timestamp timestamp) {
+        if (timestamp == null) return "";
+        LocalDate date = timestamp.toLocalDateTime().toLocalDate();
+        return date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
     }
 }

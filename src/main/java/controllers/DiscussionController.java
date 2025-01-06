@@ -201,4 +201,7 @@ public class DiscussionController {
     private String formatTimestamp(LocalDateTime timestamp) {
         return timestamp.format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
     }
+
+    public void setLocationInfo(String locationName) {
+    }
 }
