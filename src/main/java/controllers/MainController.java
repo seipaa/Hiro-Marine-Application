@@ -212,10 +212,13 @@ public class MainController {
     public void initialize() {
         System.out.println("Initializing MainController...");
         
-        // Initialize only what's needed immediately
+        // Initialize components
         setupTabListeners();
         setupSearchListeners();
         setupButtonStyles();
+        
+        // Load initial leaderboard
+        updateLeaderboard();
     }
 
     private void setupTabListeners() {
@@ -594,6 +597,7 @@ public class MainController {
 
             ChallengeDetailsController controller = loader.getController();
             controller.setCurrentUser(currentUser);
+            controller.setMainController(this);
             controller.loadChallengeDetails(challenge);
 
             Stage stage = new Stage();
@@ -653,65 +657,59 @@ public class MainController {
 
     // Metode untuk memperbarui leaderboard
     public void updateLeaderboard() {
-        System.out.print("Updating leaderboard...\n");
-        try {
-            UserDAO userDAO = new UserDAO();
-            List<User> topUsers = userDAO.getTopThreeUsers();
-
-            Platform.runLater(() -> {
+        Platform.runLater(() -> {
+            try {
+                // Ambil data top users terbaru
+                List<User> topUsers = leaderboardFetcher.getTopUsers();
+                
+                // Update labels leaderboard
                 if (topUsers.size() >= 1) {
-                    User firstPlace = topUsers.get(0);
-                    firstPlaceLabel.setText(firstPlace.getName());
-                    firstPlacePoints.setText(firstPlace.getTotalPoints() + " pts");
+                    firstPlaceLabel.setText(topUsers.get(0).getName());
+                    firstPlacePoints.setText(topUsers.get(0).getTotalPoints() + " pts");
                 }
+                
                 if (topUsers.size() >= 2) {
-                    User secondPlace = topUsers.get(1);
-                    secondPlaceLabel.setText(secondPlace.getName());
-                    secondPlacePoints.setText(secondPlace.getTotalPoints() + " pts");
+                    secondPlaceLabel.setText(topUsers.get(1).getName());
+                    secondPlacePoints.setText(topUsers.get(1).getTotalPoints() + " pts");
                 }
+                
                 if (topUsers.size() >= 3) {
-                    User thirdPlace = topUsers.get(2);
-                    thirdPlaceLabel.setText(thirdPlace.getName());
-                    thirdPlacePoints.setText(thirdPlace.getTotalPoints() + " pts");
+                    thirdPlaceLabel.setText(topUsers.get(2).getName());
+                    thirdPlacePoints.setText(topUsers.get(2).getTotalPoints() + " pts");
                 }
-
-                // Update next rank info for current user
+                
+                // Update next rank untuk current user jika ada
                 if (currentUser != null) {
-                    updateNextRankInfo(currentUser, topUsers);
+                    updateNextRank(currentUser.getId());
                 }
-            });
-
-            System.out.print("Top users found: " + topUsers.size() + "\n");
-            for (User user : topUsers) {
-                System.out.print(user.getName() + ": " + user.getTotalPoints() + " poin\n");
+                
+            } catch (Exception e) {
+                System.err.println("Error updating leaderboard: " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.err.print("Error updating leaderboard: " + e.getMessage() + "\n");
-            e.printStackTrace();
-        }
+        });
     }
 
-    private void updateNextRankInfo(User currentUser, List<User> topUsers) {
-        int currentPoints = currentUser.getTotalPoints();
-        String nextRankInfo = "";
-
-        if (topUsers.isEmpty()) {
-            nextRankInfo = "Jadilah yang pertama di leaderboard!";
-        } else if (!topUsers.get(0).getName().equals(currentUser.getName())) {
-            // Find next rank target
-            for (int i = topUsers.size() - 1; i >= 0; i--) {
-                User rankUser = topUsers.get(i);
-                if (currentPoints < rankUser.getTotalPoints()) {
-                    int pointsNeeded = rankUser.getTotalPoints() - currentPoints;
-                    nextRankInfo = pointsNeeded + " poin lagi untuk naik peringkat!";
-                    break;
+    private void updateNextRank(int userId) {
+        try {
+            String query = "SELECT name, total_points, " +
+                          "(SELECT COUNT(*) + 1 FROM users u2 WHERE u2.total_points > u1.total_points) as rank " +
+                          "FROM users u1 " +
+                          "WHERE id = ?";
+                          
+            try (Connection conn = DatabaseHelper.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(query)) {
+                
+                stmt.setInt(1, userId);
+                ResultSet rs = stmt.executeQuery();
+                
+                if (rs.next()) {
+                    int rank = rs.getInt("rank");
+                    nextRankLabel.setText("Peringkat Kamu: #" + rank);
                 }
             }
-        } else {
-            nextRankInfo = "🎉 Anda di peringkat teratas!";
+        } catch (SQLException e) {
+            System.err.println("Error updating next rank: " + e.getMessage());
         }
-
-        nextRankLabel.setText(nextRankInfo);
     }
 
     @FXML

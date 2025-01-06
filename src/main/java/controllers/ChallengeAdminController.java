@@ -570,33 +570,22 @@ public class ChallengeAdminController {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
             
-            // 1. Update points user
-            String updatePointsQuery = "UPDATE users SET total_points = total_points + ? WHERE id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(updatePointsQuery)) {
-                stmt.setInt(1, item.getChallengePoints());
-                stmt.setInt(2, item.getUserId());
-                int updated = stmt.executeUpdate();
-                if (updated == 0) throw new SQLException("Gagal menambahkan poin");
-            }
-
-            // 2. Insert ke user_challenges
-            String insertQuery = "INSERT INTO user_challenges (user_id, challenge_id, status) VALUES (?, ?, 'COMPLETED')";
-            try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
-                stmt.setInt(1, item.getUserId());
-                stmt.setInt(2, item.getChallengeId());
-                int inserted = stmt.executeUpdate();
-                if (inserted == 0) throw new SQLException("Gagal mencatat challenge");
-            }
-
+            // Update points dan status
+            updateUserPoints(conn, item);
+            insertUserChallenge(conn, item);
+            
             conn.commit();
             
-            // Refresh data setelah commit berhasil
+            // Refresh UI
             Platform.runLater(() -> {
                 try {
                     loadVerificationItems();
                     filterChallengeTable(challengeFilterCombo.getValue());
+                    
+                    // Update leaderboard di main window
                     if (mainController != null) {
                         mainController.updateLeaderboard();
+                        mainController.refreshChallenges();
                     }
                     
                     AlertUtils.showInfo("Success", String.format(
@@ -610,23 +599,9 @@ public class ChallengeAdminController {
             });
             
         } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            AlertUtils.showError("Error", "Gagal memverifikasi challenge: " + e.getMessage());
+            handleTransactionError(conn, e);
         } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            closeConnection(conn);
         }
     }
 
@@ -660,5 +635,48 @@ public class ChallengeAdminController {
         public int getChallengeId() { return challengeId; }
         public String getChallengeTitle() { return challengeTitle; }
         public int getChallengePoints() { return challengePoints; }
+    }
+
+    private void updateUserPoints(Connection conn, VerificationItem item) throws SQLException {
+        String updatePointsQuery = "UPDATE users SET total_points = total_points + ? WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(updatePointsQuery)) {
+            stmt.setInt(1, item.getChallengePoints());
+            stmt.setInt(2, item.getUserId());
+            int updated = stmt.executeUpdate();
+            if (updated == 0) throw new SQLException("Gagal menambahkan poin");
+        }
+    }
+
+    private void insertUserChallenge(Connection conn, VerificationItem item) throws SQLException {
+        String insertQuery = "INSERT INTO user_challenges (user_id, challenge_id, status, completed_at) " +
+                            "VALUES (?, ?, 'COMPLETED', CURRENT_TIMESTAMP)";
+        try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
+            stmt.setInt(1, item.getUserId());
+            stmt.setInt(2, item.getChallengeId());
+            int inserted = stmt.executeUpdate();
+            if (inserted == 0) throw new SQLException("Gagal mencatat challenge");
+        }
+    }
+
+    private void handleTransactionError(Connection conn, SQLException e) {
+        if (conn != null) {
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+        AlertUtils.showError("Error", "Gagal memverifikasi challenge: " + e.getMessage());
+    }
+
+    private void closeConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                conn.setAutoCommit(true);
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 } 
