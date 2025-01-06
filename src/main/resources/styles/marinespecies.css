@@ -67,24 +67,20 @@
 /* Styling untuk tombol kembali */
 .back-button {
     -fx-background-color: rgba(255,255,255,0.2);
-    -fx-padding: 10;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 10 15;
     -fx-background-radius: 50;
-    -fx-min-width: 45px;
-    -fx-min-height: 45px;
-    -fx-max-width: 45px;
-    -fx-max-height: 45px;
     -fx-cursor: hand;
-    -fx-alignment: center;
-    -fx-content-display: center;
+    -fx-min-width: 50px;
+    -fx-min-height: 50px;
+    -fx-max-width: 50px;
+    -fx-max-height: 50px;
+    -fx-font-size: 20px;
 }
 
 .back-button:hover {
-    -fx-background-color: rgba(255,255,255,0.3);
-}
-
-.back-button-icon {
-    -fx-fill: white;
-    -fx-font-family: FontAwesome;
+    -fx-background-color: rgba(255,255,255,0.2);
+    -fx-text-fill: #D6D6D6FF;
 }
 
 /* Styling untuk Scrollbar */
@@ -160,15 +156,15 @@
 
 /* Styling untuk tombol kembali dengan FontAwesome */
 .back-button {
-    -fx-background-color: rgba(255,255,255,0.2);
-    -fx-text-fill: white;
+    -fx-background-color: white;
+    -fx-text-fill: #21d4c8;
     -fx-padding: 10 15;
     -fx-background-radius: 50;
     -fx-cursor: hand;
 }
 
 .back-button:hover {
-    -fx-background-color: rgba(255,255,255,0.3);
+    -fx-background-color: #15a198;
 }
 
 .back-button .glyph-icon {
@@ -177,7 +173,7 @@
 
 /* Styling untuk tombol tambah dengan FontAwesome */
 .add-button {
-    -fx-background-color: transparent;
+    -fx-background-color: white;
     -fx-border-color: white;
     -fx-border-width: 2;
     -fx-border-radius: 50;
@@ -186,13 +182,18 @@
     -fx-min-height: 45px;
     -fx-max-width: 45px;
     -fx-max-height: 45px;
-    -fx-padding: 10;
+    -fx-padding: 0; /* Padding diatur ke 0 agar tidak mengganggu posisi teks */
     -fx-cursor: hand;
-    -fx-alignment: center;
+    -fx-alignment: center; /* Mengatur alignment konten */
+    -fx-text-alignment: center; /* Mengatur alignment teks */
+    -fx-content-display: center; /* Memastikan konten (teks) berada di tengah */
+    -fx-font-size: 24px; /* Ukuran font yang lebih besar untuk simbol '+' */
+    -fx-font-family: "Arial"; /* Gunakan font yang konsisten */
 }
 
 .add-button:hover {
-    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-background-color: #D6D6D6FF;
+    -fx-border-color: #D6D6D6FF;
 }
 
 .add-button-icon {

@@ -8,6 +8,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import models.MarineSpecies;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -15,8 +17,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Modality;
 import utils.AlertUtils;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
-import java.io.ByteArrayInputStream;
 
 public class MarineSpeciesController {
     @FXML private ImageView speciesImage;
@@ -27,7 +27,6 @@ public class MarineSpeciesController {
     @FXML private Button editButton;
     @FXML private Button deleteButton;
     @FXML private Button backButton;
-    @FXML private FontAwesomeIconView backIcon;
 
     private MainController mainController;
     private MarineSpecies currentSpecies;
@@ -58,15 +57,6 @@ public class MarineSpeciesController {
         speciesLatinName.setText(species.getLatinName());
         speciesType.setText(species.getType());
         speciesDescription.setText(species.getDescription());
-    }
-
-    @FXML
-    public void initialize() {
-        // Pastikan icon sudah diinisialisasi dengan benar
-        if (backIcon != null) {
-            backIcon.setSize("24");
-            backIcon.setStyleClass("back-button-icon");
-        }
     }
 
     @FXML

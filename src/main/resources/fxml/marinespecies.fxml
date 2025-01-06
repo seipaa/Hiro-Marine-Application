@@ -31,13 +31,14 @@
         <!-- Content Container -->
         <HBox prefHeight="494.0" prefWidth="800.0" spacing="30" style="-fx-padding: 40;">
             <!-- Back Button -->
-            <Button fx:id="backButton" maxHeight="50.0" maxWidth="50.0" onAction="#handleBack" prefHeight="50.0" prefWidth="50.0" styleClass="back-button" text="←">
-            <cursor>
-               <Cursor fx:constant="HAND" />
-            </cursor>
-            <font>
-               <Font size="17.0" />
-            </font></Button>
+            <Button fx:id="backButton" maxHeight="100.0" maxWidth="100.0" onAction="#handleBack" prefHeight="100.0" prefWidth="100.0" style="-fx-padding: 10; -fx-alignment: center;" styleClass="back-button" text="←" textFill="#21d4c8">
+                <cursor>
+                    <Cursor fx:constant="HAND" />
+                </cursor>
+                <font>
+                    <Font size="17.0" />
+                </font>
+            </Button>
 
             <!-- Left Side - Image -->
             <VBox alignment="TOP_CENTER" prefWidth="300" spacing="20">

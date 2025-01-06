@@ -11,7 +11,16 @@ public class DatabaseConnection {
     private static final String USERNAME = "hiro";
     private static final String PASSWORD = "hiro";
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+        try {
+            return DriverManager.getConnection(
+                "jdbc:mysql://34.44.81.201:3306/hiros_marine",
+                "hiro",
+                "hiro"
+            );
+        } catch (SQLException e) {
+            System.err.println("Error connecting to database: " + e.getMessage());
+            throw e;
+        }
     }
     public static void main(String[] args) {
         try (Connection connection = getConnection()) {
