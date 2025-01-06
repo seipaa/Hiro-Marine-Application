@@ -16,6 +16,7 @@ import javafx.scene.control.Button;
 import javafx.stage.Modality;
 import utils.AlertUtils;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import java.io.ByteArrayInputStream;
 
 public class MarineSpeciesController {
     @FXML private ImageView speciesImage;
@@ -39,22 +40,18 @@ public class MarineSpeciesController {
     public void setSpeciesData(MarineSpecies species) {
         this.currentSpecies = species;
         try {
-            String imageUrl = species.getImageUrl();
-            // Handle both formats: with and without "/images/" prefix
-            String imagePath = imageUrl.startsWith("/images/") ? 
-                imageUrl : "/images/" + imageUrl;
-            
-            System.out.println("Loading image from path: " + imagePath);
-            Image image = new Image(getClass().getResourceAsStream(imagePath));
-            speciesImage.setImage(image);
-        } catch (Exception e) {
-            System.err.println("Error loading image: " + species.getImageUrl());
-            try {
-                Image defaultImage = new Image(getClass().getResourceAsStream("/images/default_species.jpg"));
-                speciesImage.setImage(defaultImage);
-            } catch (Exception ex) {
-                System.err.println("Error loading default image");
+            // Ambil data gambar dari database
+            byte[] imageData = marineSpeciesDAO.getSpeciesImage(species.getId());
+            if (imageData != null && imageData.length > 0) {
+                Image image = new Image(new ByteArrayInputStream(imageData));
+                speciesImage.setImage(image);
+            } else {
+                // Jika tidak ada gambar, tampilkan placeholder
+                speciesImage.setStyle("-fx-background-color: #cccccc;");
             }
+        } catch (Exception e) {
+            System.err.println("Error loading image: " + e.getMessage());
+            speciesImage.setStyle("-fx-background-color: #cccccc;");
         }
         
         speciesName.setText(species.getName());

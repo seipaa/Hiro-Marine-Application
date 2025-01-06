@@ -320,17 +320,19 @@ public class MainController {
         imageView.setFitWidth(150);
         imageView.setPreserveRatio(true);
 
+        // Load image from database
         try {
-            Image image = new Image(getClass().getResourceAsStream(species.getImageUrl()));
-            imageView.setImage(image);
-        } catch (Exception e) {
-            System.err.println("Error loading image: " + species.getImageUrl());
-            try {
-                Image defaultImage = new Image(getClass().getResourceAsStream("/images/default_species.jpg"));
-                imageView.setImage(defaultImage);
-            } catch (Exception ex) {
-                System.err.println("Error loading default image");
+            if (species.getImageUrl() != null && !species.getImageUrl().isEmpty()) {
+                Image image = new Image(getClass().getResourceAsStream(species.getImageUrl()));
+                imageView.setImage(image);
+            } else {
+                // Jika tidak ada gambar, tampilkan placeholder
+                imageView.setStyle("-fx-background-color: #cccccc;");
             }
+        } catch (Exception e) {
+            System.err.println("Error loading image for species: " + species.getName());
+            // Jika gagal load gambar, tampilkan placeholder
+            imageView.setStyle("-fx-background-color: #cccccc;");
         }
 
         imageContainer.getChildren().add(imageView);
@@ -937,6 +939,8 @@ public class MainController {
             Parent root = loader.load();
 
             AdminMarineSpeciesController controller = loader.getController();
+            controller.setMainController(this);
+
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Admin Marine Species");

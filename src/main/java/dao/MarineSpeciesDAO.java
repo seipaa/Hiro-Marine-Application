@@ -3,37 +3,55 @@ package dao;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import models.MarineSpecies;
+import utils.DatabaseConnection;
 import utils.DatabaseHelper;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.sql.Statement;
 
 public class MarineSpeciesDAO extends BaseDAO {
-    // ...
+    private ImageDAO imageDAO = new ImageDAO();
 
     public ObservableList<MarineSpecies> getAllMarineSpecies() {
         ObservableList<MarineSpecies> speciesList = FXCollections.observableArrayList();
-        String query = "SELECT * FROM species ORDER BY name";
+        String query = "SELECT s.*, i.image_data, i.image_name FROM species s " +
+                      "LEFT JOIN images i ON s.id = i.species_id " +
+                      "ORDER BY s.name";
 
         try (Connection con = getConnection();
              PreparedStatement stmt = con.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
+                byte[] imageData = rs.getBytes("image_data");
+                String imageName = rs.getString("image_name");
+                
+                // Buat URL gambar yang sesuai jika ada data gambar
+                String imageUrl;
+                if (imageData != null && imageData.length > 0) {
+                    // Simpan gambar ke file temporary dan gunakan path-nya
+                    imageUrl = saveImageToTemp(imageData, imageName);
+                } else {
+                    // Jika tidak ada gambar, gunakan string kosong
+                    imageUrl = "";
+                }
+
                 MarineSpecies species = new MarineSpecies(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("latin_name"),
-                        rs.getString("description"),
-                        rs.getString("image_url"),
-                        rs.getString("type")
+                    rs.getInt("id"),
+                    imageUrl,
+                    rs.getString("name"),
+                    rs.getString("latin_name"),
+                    rs.getString("description"),
+                    rs.getString("type")
                 );
                 speciesList.add(species);
-                System.out.println("Loaded species: " + species.getName()); // Debug log
             }
         } catch (SQLException e) {
             System.err.println("Error fetching species: " + e.getMessage());
@@ -42,8 +60,29 @@ public class MarineSpeciesDAO extends BaseDAO {
         return speciesList;
     }
 
+    private String saveImageToTemp(byte[] imageData, String imageName) {
+        try {
+            // Buat direktori temporary jika belum ada
+            Path tempDir = Paths.get("src/main/resources/images/temp");
+            if (!Files.exists(tempDir)) {
+                Files.createDirectories(tempDir);
+            }
+
+            // Simpan gambar ke file temporary
+            String fileName = "species_" + System.currentTimeMillis() + "_" + imageName;
+            Path tempFile = tempDir.resolve(fileName);
+            Files.write(tempFile, imageData);
+
+            return "/images/temp/" + fileName;
+        } catch (IOException e) {
+            System.err.println("Error saving image: " + e.getMessage());
+            e.printStackTrace();
+            return "/images/default_species.jpg";
+        }
+    }
+
     public void addMarineSpecies(MarineSpecies species) {
-        String query = "INSERT INTO species (name, latin_name, description, image_url, type, status) VALUES (?, ?, ?, ?, ?, 'pending')";
+        String query = "INSERT INTO species (name, latin_name, description, type, status) VALUES (?, ?, ?, ?, ?, 'pending')";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -67,7 +106,7 @@ public class MarineSpeciesDAO extends BaseDAO {
     }
 
     public void updateMarineSpecies(MarineSpecies species) {
-        String query = "UPDATE species SET name=?, latin_name=?, description=?, image_url=?, type=? WHERE id=?";
+        String query = "UPDATE species SET name=?, latin_name=?, description=?, type=? WHERE id=?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -111,33 +150,24 @@ public class MarineSpeciesDAO extends BaseDAO {
         }
     }
 
-    public void addPendingSpecies(MarineSpecies species) throws SQLException {
-        String query = "INSERT INTO species (image_url, name, latin_name, description, type, status) " +
-                "VALUES (?, ?, ?, ?, ?, 'pending')";
-
-        try (Connection con = getConnection();
-             PreparedStatement stmt = con.prepareStatement(query)) {
-
-            String imageUrl = species.getImageUrl();
-            if (!imageUrl.startsWith("/images/")) {
-                imageUrl = "/images/" + imageUrl;
+    public int addPendingSpecies(MarineSpecies species) throws SQLException {
+        String sql = "INSERT INTO species (name, latin_name, description, type, status) VALUES (?, ?, ?, ?, 'pending')";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
+            stmt.setString(1, species.getName());
+            stmt.setString(2, species.getLatinName());
+            stmt.setString(3, species.getDescription());
+            stmt.setString(4, species.getType());
+            
+            stmt.executeUpdate();
+            
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
             }
-            stmt.setString(1, imageUrl);
-            stmt.setString(2, species.getName());
-            stmt.setString(3, species.getLatinName());
-            stmt.setString(4, species.getDescription());
-            stmt.setString(5, species.getType());
-
-            int result = stmt.executeUpdate();
-            if (result > 0) {
-                System.out.println("Species added successfully: " + species.getName());
-            } else {
-                throw new SQLException("Failed to add species");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error adding species: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
+            throw new SQLException("Gagal mendapatkan ID species yang baru dibuat");
         }
     }
 
@@ -164,7 +194,10 @@ public class MarineSpeciesDAO extends BaseDAO {
 
     public ObservableList<MarineSpecies> getAllApprovedSpecies() {
         ObservableList<MarineSpecies> speciesList = FXCollections.observableArrayList();
-        String query = "SELECT * FROM species WHERE status = 'approved' ORDER BY name";
+        String query = "SELECT s.id, s.name, s.latin_name, s.description, s.type " +
+                      "FROM species s " +
+                      "WHERE s.status = 'approved' " +
+                      "ORDER BY s.name";
 
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
@@ -173,14 +206,13 @@ public class MarineSpeciesDAO extends BaseDAO {
             while (rs.next()) {
                 MarineSpecies species = new MarineSpecies(
                     rs.getInt("id"),
-                    rs.getString("image_url"),
+                    "",
                     rs.getString("name"),
                     rs.getString("latin_name"),
                     rs.getString("description"),
                     rs.getString("type")
                 );
                 speciesList.add(species);
-                System.out.println("Loaded approved species: " + species.getName());
             }
         } catch (SQLException e) {
             System.err.println("Error loading approved species: " + e.getMessage());
@@ -191,7 +223,10 @@ public class MarineSpeciesDAO extends BaseDAO {
 
     public ObservableList<MarineSpecies> getAllPendingSpecies() {
         ObservableList<MarineSpecies> speciesList = FXCollections.observableArrayList();
-        String query = "SELECT * FROM species WHERE status = 'pending' ORDER BY name";
+        String query = "SELECT s.*, i.image_name FROM species s " +
+                      "LEFT JOIN images i ON s.id = i.species_id " +
+                      "WHERE s.status = 'pending' " +
+                      "ORDER BY s.name";
 
         try (Connection con = DatabaseHelper.getConnection();
              PreparedStatement stmt = con.prepareStatement(query)) {
@@ -200,12 +235,12 @@ public class MarineSpeciesDAO extends BaseDAO {
 
             while (rs.next()) {
                 MarineSpecies species = new MarineSpecies(
-                        rs.getInt("id"),
-                        rs.getString("image_url"),
-                        rs.getString("name"),
-                        rs.getString("latin_name"),
-                        rs.getString("description"),
-                        rs.getString("type")
+                    rs.getInt("id"),
+                    rs.getString("image_name"),
+                    rs.getString("name"),
+                    rs.getString("latin_name"),
+                    rs.getString("description"),
+                    rs.getString("type")
                 );
                 speciesList.add(species);
             }
@@ -245,62 +280,174 @@ public class MarineSpeciesDAO extends BaseDAO {
     }
 
     public void updateSpecies(MarineSpecies species) throws SQLException {
-        String query = "UPDATE species SET image_url = ?, name = ?, latin_name = ?, " +
-                "description = ?, type = ? WHERE id = ?";
+        updateSpecies(species, null);
+    }
 
-        try (Connection con = getConnection();
-             PreparedStatement stmt = con.prepareStatement(query)) {
+    public void updateSpecies(MarineSpecies species, byte[] imageData) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
 
-            String imageUrl = species.getImageUrl();
-            if (!imageUrl.startsWith("/images/")) {
-                imageUrl = "/images/" + imageUrl;
+            // Update species data
+            String speciesQuery = "UPDATE species SET name=?, latin_name=?, description=?, type=? WHERE id=?";
+            try (PreparedStatement stmt = conn.prepareStatement(speciesQuery)) {
+                stmt.setString(1, species.getName());
+                stmt.setString(2, species.getLatinName());
+                stmt.setString(3, species.getDescription());
+                stmt.setString(4, species.getType());
+                stmt.setInt(5, species.getId());
+                stmt.executeUpdate();
             }
-            stmt.setString(1, imageUrl);
-            stmt.setString(2, species.getName());
-            stmt.setString(3, species.getLatinName());
-            stmt.setString(4, species.getDescription());
-            stmt.setString(5, species.getType());
-            stmt.setInt(6, species.getId());
 
-            int result = stmt.executeUpdate();
-            if (result != 1) {
-                throw new SQLException("Failed to update species");
+            // Update image jika ada
+            if (imageData != null && imageData.length > 0) {
+                String checkImageQuery = "SELECT COUNT(*) FROM images WHERE species_id = ?";
+                boolean imageExists = false;
+                
+                try (PreparedStatement checkStmt = conn.prepareStatement(checkImageQuery)) {
+                    checkStmt.setInt(1, species.getId());
+                    ResultSet rs = checkStmt.executeQuery();
+                    if (rs.next()) {
+                        imageExists = rs.getInt(1) > 0;
+                    }
+                }
+
+                if (imageExists) {
+                    // Update existing image
+                    String updateImageQuery = "UPDATE images SET image_data=?, image_name=? WHERE species_id=?";
+                    try (PreparedStatement imgStmt = conn.prepareStatement(updateImageQuery)) {
+                        imgStmt.setBlob(1, new javax.sql.rowset.serial.SerialBlob(imageData));
+                        String imageName = species.getImageUrl().substring(species.getImageUrl().lastIndexOf('/') + 1);
+                        imgStmt.setString(2, imageName);
+                        imgStmt.setInt(3, species.getId());
+                        imgStmt.executeUpdate();
+                    }
+                } else {
+                    // Insert new image
+                    String insertImageQuery = "INSERT INTO images (species_id, image_name, image_data, created_at) VALUES (?, ?, ?, NOW())";
+                    try (PreparedStatement imgStmt = conn.prepareStatement(insertImageQuery)) {
+                        imgStmt.setInt(1, species.getId());
+                        String imageName = species.getImageUrl().substring(species.getImageUrl().lastIndexOf('/') + 1);
+                        imgStmt.setString(2, imageName);
+                        imgStmt.setBlob(3, new javax.sql.rowset.serial.SerialBlob(imageData));
+                        imgStmt.executeUpdate();
+                    }
+                }
             }
+
+            conn.commit();
         } catch (SQLException e) {
-            System.err.println("Error updating species: " + e.getMessage());
-            e.printStackTrace();
+            if (conn != null) {
+                conn.rollback();
+            }
             throw e;
+        } finally {
+            if (conn != null) {
+                conn.setAutoCommit(true);
+            }
         }
     }
 
-    public void addSpecies(MarineSpecies newSpecies) throws SQLException {
-        String query = "INSERT INTO species (image_url, name, latin_name, description, type, status) " +
-                "VALUES (?, ?, ?, ?, ?, 'pending')";
-        try (Connection con = DatabaseHelper.getConnection();
-             PreparedStatement stmt = con.prepareStatement(query)) {
+    public void addSpecies(MarineSpecies species) throws SQLException {
+        addSpecies(species, null);
+    }
 
-            String imageUrl = newSpecies.getImageUrl();
-            if (!imageUrl.startsWith("/images/")) {
-                imageUrl = "/images/" + imageUrl;
+    public void addSpecies(MarineSpecies species, byte[] imageData) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
+
+            // Insert species dengan status 'approved'
+            String speciesQuery = "INSERT INTO species (name, latin_name, description, type, status) VALUES (?, ?, ?, ?, 'approved')";
+            try (PreparedStatement stmt = conn.prepareStatement(speciesQuery, Statement.RETURN_GENERATED_KEYS)) {
+                stmt.setString(1, species.getName());
+                stmt.setString(2, species.getLatinName());
+                stmt.setString(3, species.getDescription());
+                stmt.setString(4, species.getType());
+                
+                stmt.executeUpdate();
+                
+                // Dapatkan ID species yang baru dibuat
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    int speciesId = rs.getInt(1);
+                    
+                    // Insert image jika ada
+                    if (imageData != null && imageData.length > 0) {
+                        String imageQuery = "INSERT INTO images (species_id, image_name, image_data, created_at) VALUES (?, ?, ?, NOW())";
+                        try (PreparedStatement imgStmt = conn.prepareStatement(imageQuery)) {
+                            imgStmt.setInt(1, speciesId);
+                            String imageName = species.getImageUrl().substring(species.getImageUrl().lastIndexOf('/') + 1);
+                            imgStmt.setString(2, imageName);
+                            imgStmt.setBlob(3, new javax.sql.rowset.serial.SerialBlob(imageData));
+                            imgStmt.executeUpdate();
+                        }
+                    }
+                }
             }
-
-            stmt.setString(1, imageUrl);
-            stmt.setString(2, newSpecies.getName());
-            stmt.setString(3, newSpecies.getLatinName());
-            stmt.setString(4, newSpecies.getDescription());
-            stmt.setString(5, newSpecies.getType());
-
-            stmt.executeUpdate();
+            
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                conn.setAutoCommit(true);
+            }
         }
     }
 
     public void deleteSpecies(int id) throws SQLException {
-        String query = "DELETE FROM species WHERE id = ?";
-        try (Connection con = DatabaseHelper.getConnection();
-             PreparedStatement stmt = con.prepareStatement(query)) {
+        Connection conn = null;
+        try {
+            conn = DatabaseHelper.getConnection();
+            conn.setAutoCommit(false);
 
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
+            // Hapus dari tabel images terlebih dahulu
+            String deleteImageQuery = "DELETE FROM images WHERE species_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(deleteImageQuery)) {
+                stmt.setInt(1, id);
+                stmt.executeUpdate();
+            }
+
+            // Kemudian hapus dari tabel species
+            String deleteSpeciesQuery = "DELETE FROM species WHERE id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(deleteSpeciesQuery)) {
+                stmt.setInt(1, id);
+                int result = stmt.executeUpdate();
+                
+                if (result == 0) {
+                    throw new SQLException("Species dengan ID " + id + " tidak ditemukan");
+                }
+            }
+
+            // Commit transaksi jika berhasil
+            conn.commit();
+
+        } catch (SQLException e) {
+            // Rollback jika terjadi error
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            throw new SQLException("Gagal menghapus species: " + e.getMessage());
+        } finally {
+            // Kembalikan autocommit ke true dan tutup koneksi
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -345,6 +492,39 @@ public class MarineSpeciesDAO extends BaseDAO {
             e.printStackTrace();
         }
         return speciesList;
+    }
+
+    public byte[] getSpeciesImage(int speciesId) throws SQLException {
+        String query = "SELECT image_data FROM images WHERE species_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, speciesId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    java.sql.Blob blob = rs.getBlob("image_data");
+                    if (blob != null) {
+                        return blob.getBytes(1, (int) blob.length());
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public byte[] loadSpeciesImage(int speciesId) {
+        String query = "SELECT image_data FROM images WHERE species_id = ?";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, speciesId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBytes("image_data");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error loading species image: " + e.getMessage());
+        }
+        return null;
     }
 
     // ...

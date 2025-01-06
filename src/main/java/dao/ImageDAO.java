@@ -1,91 +1,78 @@
 package dao;
 
 import utils.DatabaseConnection;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.io.File;
+import java.sql.*;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class ImageDAO {
 
-    public void saveImage(String imagePath) {
-        String sql = "INSERT INTO images (image_data) VALUES (?)";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             FileInputStream fis = new FileInputStream(imagePath);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setBinaryStream(1, fis, fis.available());
-            pstmt.executeUpdate();
-            System.out.println("Image inserted successfully!");
-
-        } catch (SQLException e) {
-            System.err.println("SQL Error: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("IO Error: " + e.getMessage());
-        }
-    }
-
-    public static void insertEntry(byte[] imageData, File file) throws SQLException {
-        Connection con = null;
-        PreparedStatement st = null;
-
-        try {
-            con = DatabaseConnection.getConnection();
-            String query = "INSERT INTO images (name, data) VALUES (?, ?)";
-            st = con.prepareStatement(query);
-            st.setString(1, file.getName());
-            st.setBytes(2, imageData);
-
-            int rowsInserted = st.executeUpdate();
-            if (rowsInserted > 0) {
-                System.out.println("Image saved successfully!");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
     public static ArrayList<byte[]> getImages() {
-        ArrayList<byte[]> result = new ArrayList();
-        Connection con = null;
-        PreparedStatement st = null;
-
-        try {
-            con = DatabaseConnection.getConnection();
-            String sql = "SELECT name, data FROM images";
-            st = con.prepareStatement(sql);
-            ResultSet rs = st.executeQuery();
-
-            while(rs.next())
-            {
-                result.add(rs.getBytes("data"));
+        ArrayList<byte[]> result = new ArrayList<>();
+        String sql = "SELECT image_data FROM images";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Blob blob = rs.getBlob("image_data");
+                result.add(blob.getBytes(1, (int) blob.length()));
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+        }
+        
+        return result;
+    }
+
+    // Menyimpan gambar ke database
+    public void saveImage(int speciesId, String imageName, InputStream imageData) throws SQLException {
+        String sql = "INSERT INTO images (species_id, image_name, image_data) VALUES (?, ?, ?)";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, speciesId);
+            stmt.setString(2, imageName);      // VARCHAR(255) - untuk nama file asli
+            stmt.setBlob(3, imageData);        // LONGBLOB - untuk data binary gambar
+            
+            stmt.executeUpdate();
+        }
+    }
+    
+    // Mengambil data gambar dari database
+    public byte[] getImageData(int speciesId) throws SQLException {
+        String sql = "SELECT image_data FROM images WHERE species_id = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, speciesId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                Blob blob = rs.getBlob("image_data");
+                return blob.getBytes(1, (int) blob.length());
             }
         }
-        return result;
+        return null;
+    }
+    
+    // Mengambil nama gambar
+    public String getImageName(int speciesId) throws SQLException {
+        String sql = "SELECT image_name FROM images WHERE species_id = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, speciesId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getString("image_name");
+            }
+        }
+        return null;
     }
 }

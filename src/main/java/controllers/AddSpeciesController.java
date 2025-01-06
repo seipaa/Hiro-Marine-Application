@@ -1,6 +1,7 @@
 package controllers;
 
 import dao.MarineSpeciesDAO;
+import dao.ImageDAO;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -11,11 +12,21 @@ import utils.AlertUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.io.FileInputStream;
+import javafx.scene.image.Image;
+import javafx.scene.control.Alert;
+import utils.DatabaseConnection;
 
 public class AddSpeciesController {
     @FXML private TextField nameField;
@@ -26,6 +37,8 @@ public class AddSpeciesController {
 
     private MainController mainController;
     private MarineSpeciesDAO marineSpeciesDAO = new MarineSpeciesDAO();
+    private ImageDAO imageDAO = new ImageDAO();
+    private File selectedImageFile;
 
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
@@ -40,56 +53,65 @@ public class AddSpeciesController {
         );
 
         Stage stage = (Stage) nameField.getScene().getWindow();
-        File selectedFile = fileChooser.showOpenDialog(stage);
+        selectedImageFile = fileChooser.showOpenDialog(stage);
 
-        if (selectedFile != null) {
-            try {
-                String fileName = selectedFile.getName();
-                Path destination = Paths.get("src/main/resources/images/" + fileName);
-                Files.copy(selectedFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
-
-                imageUrlField.setText("/images/" + fileName);
-            } catch (IOException e) {
-                AlertUtils.showError("Error", "Gagal menyalin file: " + e.getMessage());
-            }
+        if (selectedImageFile != null) {
+            imageUrlField.setText(selectedImageFile.getName());
         }
     }
 
     @FXML
     private void saveSpecies() {
         try {
-            // Validasi input
-            if (nameField.getText().isEmpty() || latinNameField.getText().isEmpty() || 
-                typeField.getText().isEmpty() || descriptionField.getText().isEmpty() || 
-                imageUrlField.getText().isEmpty()) {
-                AlertUtils.showError("Error", "Semua field harus diisi!");
+            if (!validateInput()) {
                 return;
             }
 
-            MarineSpecies newSpecies = new MarineSpecies(
-                0, // ID akan di-generate oleh database
-                imageUrlField.getText(),
-                nameField.getText(),
-                latinNameField.getText(),
-                descriptionField.getText(),
-                typeField.getText()
-            );
+            Connection conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false);
 
-            System.out.println("Attempting to add species: " + newSpecies.getName());
-            marineSpeciesDAO.addPendingSpecies(newSpecies);
-            
-            AlertUtils.showInfo("Sukses", "Species berhasil ditambahkan dan menunggu persetujuan admin!");
-            
-            if (mainController != null) {
-                mainController.refreshSpeciesView();
+            try {
+                MarineSpecies newSpecies = new MarineSpecies(
+                    0,
+                    "pending_image",
+                    nameField.getText(),
+                    latinNameField.getText(),
+                    descriptionField.getText(),
+                    typeField.getText()
+                );
+
+                int speciesId = marineSpeciesDAO.addPendingSpecies(newSpecies);
+
+                if (selectedImageFile != null) {
+                    try (FileInputStream fis = new FileInputStream(selectedImageFile)) {
+                        imageDAO.saveImage(
+                            speciesId,
+                            selectedImageFile.getName(),
+                            fis
+                        );
+                    }
+                }
+
+                conn.commit();
+                AlertUtils.showInfo("Sukses", "Species berhasil ditambahkan dan menunggu persetujuan admin!");
+                
+                if (mainController != null) {
+                    mainController.refreshSpeciesView();
+                }
+                
+                clearFields();
+                ((Stage) nameField.getScene().getWindow()).close();
+
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
             }
-            
-            ((Stage) nameField.getScene().getWindow()).close();
-            
-        } catch (SQLException e) {
-            System.err.println("Error saving species: " + e.getMessage());
+
+        } catch (Exception e) {
+            AlertUtils.showError("Error", "Gagal menyimpan data: " + e.getMessage());
             e.printStackTrace();
-            AlertUtils.showError("Error", "Gagal menyimpan species: " + e.getMessage());
         }
     }
 
@@ -103,7 +125,18 @@ public class AddSpeciesController {
 
     @FXML
     private void initialize() {
-        // Add any initialization code here
         System.out.println("Initializing AddSpeciesController...");
+    }
+
+    private boolean validateInput() {
+        if (nameField.getText().isEmpty() || 
+            latinNameField.getText().isEmpty() || 
+            typeField.getText().isEmpty() || 
+            descriptionField.getText().isEmpty() || 
+            selectedImageFile == null) {
+            AlertUtils.showError("Error", "Semua field harus diisi dan gambar harus dipilih!");
+            return false;
+        }
+        return true;
     }
 } 
