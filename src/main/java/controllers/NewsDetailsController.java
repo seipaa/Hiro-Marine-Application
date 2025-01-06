@@ -7,6 +7,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import models.News;
+import javafx.scene.control.Button;
+import javafx.stage.Window;
 
 public class NewsDetailsController {
     @FXML private ImageView newsImage;
@@ -15,6 +17,7 @@ public class NewsDetailsController {
     @FXML private Label adminLabel;
     @FXML private Label dateLabel;
     @FXML private HBox titleBar;
+    @FXML private Button closeButton;
 
     private double xOffset = 0;
     private double yOffset = 0;
@@ -36,10 +39,21 @@ public class NewsDetailsController {
                 }
             });
         }
+        
+        // Add hover effect for close button
+        if (closeButton != null) {
+            closeButton.setOnMouseEntered(e -> 
+                closeButton.setStyle("-fx-background-color: #ff4444; -fx-text-fill: white;")
+            );
+            closeButton.setOnMouseExited(e -> 
+                closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white;")
+            );
+        }
     }
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        System.out.println("Stage set in NewsDetailsController: " + (stage != null));
     }
 
     public void setNews(News news) {
@@ -65,6 +79,15 @@ public class NewsDetailsController {
     private void closeDialog() {
         if (stage != null) {
             stage.close();
+        } else {
+            System.err.println("Stage is null in closeDialog");
+            // Fallback: try to get stage from scene
+            if (titleBar != null && titleBar.getScene() != null) {
+                Window window = titleBar.getScene().getWindow();
+                if (window instanceof Stage) {
+                    ((Stage) window).close();
+                }
+            }
         }
     }
 }
