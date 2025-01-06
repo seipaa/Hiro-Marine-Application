@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -36,15 +37,27 @@
                     <Label style="-fx-text-fill: white;" text="Gambar" />
                     <HBox spacing="10">
                         <TextField fx:id="speciesImageUrlField" editable="false" promptText="Pilih gambar..." style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-background-radius: 5; -fx-border-color: #2196F3; -fx-border-radius: 5; -fx-padding: 10;" HBox.hgrow="ALWAYS" />
-                        <Button onAction="#chooseImage" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 10 15; -fx-background-radius: 5;" text="Pilih File" />
+                        <Button onAction="#chooseImage" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 10 15; -fx-background-radius: 5;" text="Pilih File">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor></Button>
                     </HBox>
                 </VBox>
                 
                 <!-- CRUD Buttons -->
                 <HBox spacing="10">
-                    <Button onAction="#addSpecies" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Tambah" />
-                    <Button onAction="#updateSpecies" style="-fx-background-color: #FFC107; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Update" />
-                    <Button onAction="#deleteSpecies" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Hapus" />
+                    <Button onAction="#addSpecies" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Tambah">
+                  <cursor>
+                     <Cursor fx:constant="HAND" />
+                  </cursor></Button>
+                    <Button onAction="#updateSpecies" style="-fx-background-color: #FFC107; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Update">
+                  <cursor>
+                     <Cursor fx:constant="HAND" />
+                  </cursor></Button>
+                    <Button onAction="#deleteSpecies" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Hapus">
+                  <cursor>
+                     <Cursor fx:constant="HAND" />
+                  </cursor></Button>
                 </HBox>
             </VBox>
             
@@ -68,8 +81,14 @@
                         </style>
                     </ListView>
                     <HBox spacing="10">
-                        <Button onAction="#approveSpecies" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Setujui Species" />
-                        <Button onAction="#rejectSpecies" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Tolak Species" />
+                        <Button onAction="#approveSpecies" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Setujui Species">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor></Button>
+                        <Button onAction="#rejectSpecies" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5;" text="Tolak Species">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor></Button>
                     </HBox>
                 </VBox>
                 

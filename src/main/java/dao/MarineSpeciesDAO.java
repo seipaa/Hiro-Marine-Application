@@ -223,20 +223,19 @@ public class MarineSpeciesDAO extends BaseDAO {
 
     public ObservableList<MarineSpecies> getAllPendingSpecies() {
         ObservableList<MarineSpecies> speciesList = FXCollections.observableArrayList();
-        String query = "SELECT s.*, i.image_name FROM species s " +
-                      "LEFT JOIN images i ON s.id = i.species_id " +
+        String query = "SELECT s.id, s.name, s.latin_name, s.description, s.type " +
+                      "FROM species s " +
                       "WHERE s.status = 'pending' " +
                       "ORDER BY s.name";
 
-        try (Connection con = DatabaseHelper.getConnection();
-             PreparedStatement stmt = con.prepareStatement(query)) {
-
-            ResultSet rs = stmt.executeQuery();
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 MarineSpecies species = new MarineSpecies(
                     rs.getInt("id"),
-                    rs.getString("image_name"),
+                    "", // imageUrl akan diload saat diperlukan
                     rs.getString("name"),
                     rs.getString("latin_name"),
                     rs.getString("description"),
@@ -245,7 +244,7 @@ public class MarineSpeciesDAO extends BaseDAO {
                 speciesList.add(species);
             }
         } catch (SQLException e) {
-            System.err.println("Error fetching pending species: " + e.getMessage());
+            System.err.println("Error loading pending species: " + e.getMessage());
             e.printStackTrace();
         }
         return speciesList;

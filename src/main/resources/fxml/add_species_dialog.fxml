@@ -47,6 +47,9 @@
         <Region VBox.vgrow="ALWAYS" />
         
         <!-- Submit Button -->
-        <Button maxWidth="Infinity" onAction="#saveSpecies" style="-fx-background-color: #4CAF50;                        -fx-text-fill: white;                        -fx-font-size: 16px;                        -fx-background-radius: 5;                        -fx-padding: 15;" text="Kirim" />
+        <Button maxWidth="Infinity" onAction="#saveSpecies" style="-fx-background-color: #4CAF50;                        -fx-text-fill: white;                        -fx-font-size: 16px;                        -fx-background-radius: 5;                        -fx-padding: 15;" text="Kirim">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor></Button>
     </VBox>
 </AnchorPane>

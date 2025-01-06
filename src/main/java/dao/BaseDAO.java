@@ -1,5 +1,7 @@
 package dao;
 
+import utils.DatabaseHelper;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -15,17 +17,7 @@ public class BaseDAO {
     private static final Logger LOGGER = Logger.getLogger(BaseDAO.class.getName());
 
     protected Connection getConnection() throws SQLException {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Database connection successful (BaseDAO)");
-            return conn;
-        } catch (ClassNotFoundException e) {
-            throw new SQLException("MySQL JDBC Driver not found", e);
-        } catch (SQLException e) {
-            System.err.println("Failed to connect to database: " + e.getMessage());
-            throw e;
-        }
+        return DatabaseHelper.getConnection();
     }
 
     protected void closeConnection(Connection con) {

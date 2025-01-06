@@ -45,11 +45,23 @@ public class AdminMarineSpeciesController {
     @FXML
     public void initialize() {
         setupListViews();
-        loadApprovedSpecies(); // Load daftar species terlebih dahulu
+        refreshLists(); // Load kedua daftar species saat inisialisasi
     }
 
     private void setupListViews() {
-        // Setup cell factories
+        // Setup cell factories untuk kedua ListView
+        pendingSpeciesListView.setCellFactory(lv -> new ListCell<MarineSpecies>() {
+            @Override
+            protected void updateItem(MarineSpecies species, boolean empty) {
+                super.updateItem(species, empty);
+                if (empty || species == null) {
+                    setText(null);
+                } else {
+                    setText(species.getName() + " (" + species.getLatinName() + ")");
+                }
+            }
+        });
+
         approvedSpeciesListView.setCellFactory(lv -> new ListCell<MarineSpecies>() {
             @Override
             protected void updateItem(MarineSpecies species, boolean empty) {
@@ -62,14 +74,24 @@ public class AdminMarineSpeciesController {
             }
         });
 
-        // Add selection listener dengan lazy loading untuk gambar
+        // Add selection listeners untuk kedua ListView
+        pendingSpeciesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                selectedSpecies = newVal;
+                populateFields(newVal);
+                loadSpeciesImage(newVal.getId());
+                // Clear selection di approved list
+                approvedSpeciesListView.getSelectionModel().clearSelection();
+            }
+        });
+
         approvedSpeciesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 selectedSpecies = newVal;
                 populateFields(newVal);
-                
-                // Load gambar hanya ketika species dipilih
                 loadSpeciesImage(newVal.getId());
+                // Clear selection di pending list
+                pendingSpeciesListView.getSelectionModel().clearSelection();
             }
         });
     }
@@ -169,11 +191,16 @@ public class AdminMarineSpeciesController {
 
     private void refreshLists() {
         try {
-            // Refresh daftar species
+            // Refresh kedua daftar species
+            ObservableList<MarineSpecies> pendingSpecies = marineSpeciesDAO.getAllPendingSpecies();
             ObservableList<MarineSpecies> approvedSpecies = marineSpeciesDAO.getAllApprovedSpecies();
+            
+            // Update kedua ListView
+            pendingSpeciesListView.setItems(pendingSpecies);
             approvedSpeciesListView.setItems(approvedSpecies);
             
             // Clear selection dan fields
+            pendingSpeciesListView.getSelectionModel().clearSelection();
             approvedSpeciesListView.getSelectionModel().clearSelection();
             clearFields();
             
