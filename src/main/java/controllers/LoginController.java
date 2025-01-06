@@ -21,6 +21,7 @@ import models.Admin;
 import models.User;
 import utils.AlertUtils;
 import utils.DatabaseHelper;
+import javafx.scene.input.KeyCode;
 
 public class LoginController {
 
@@ -120,5 +121,15 @@ public class LoginController {
     }
 
     public void setMainController(MainController mainController) {
+    }
+
+    @FXML
+    public void initialize() {
+        // Add enter key handler
+        passwordField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleLogin();
+            }
+        });
     }
 }

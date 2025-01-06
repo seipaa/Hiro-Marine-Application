@@ -41,4 +41,55 @@
     -fx-background-radius: 20;
     -fx-cursor: hand;
     -fx-margin-top: 5px;
+}
+
+/* Modern TabPane Styling */
+.tab-pane {
+    -fx-tab-min-width: 100px;
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab-header-area {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 0 0;
+}
+
+.tab-pane .tab-header-background {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.tab {
+    -fx-background-color: transparent;
+    -fx-padding: 15 25;
+    -fx-cursor: hand;
+}
+
+.tab .tab-label {
+    -fx-text-fill: rgba(255, 255, 255, 0.7);
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.tab:selected {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-radius: 30;
+}
+
+.tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
+.tab:hover .tab-label {
+    -fx-text-fill: white;
+}
+
+/* Remove tab borders */
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-background-radius: 30;
+}
+
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-width: 0;
 } 

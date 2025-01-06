@@ -26,7 +26,6 @@ public class AdminMarineSpeciesController {
     @FXML private TextField speciesTypeField;
     @FXML private TextArea speciesDescriptionField;
     @FXML private TextField speciesImageUrlField;
-    @FXML private ListView<MarineSpecies> pendingSpeciesListView;
     @FXML private ListView<MarineSpecies> approvedSpeciesListView;
     
     // Preview components
@@ -44,24 +43,11 @@ public class AdminMarineSpeciesController {
 
     @FXML
     public void initialize() {
-        setupListViews();
-        refreshLists(); // Load kedua daftar species saat inisialisasi
+        setupListView();
+        refreshList();
     }
 
-    private void setupListViews() {
-        // Setup cell factories untuk kedua ListView
-        pendingSpeciesListView.setCellFactory(lv -> new ListCell<MarineSpecies>() {
-            @Override
-            protected void updateItem(MarineSpecies species, boolean empty) {
-                super.updateItem(species, empty);
-                if (empty || species == null) {
-                    setText(null);
-                } else {
-                    setText(species.getName() + " (" + species.getLatinName() + ")");
-                }
-            }
-        });
-
+    private void setupListView() {
         approvedSpeciesListView.setCellFactory(lv -> new ListCell<MarineSpecies>() {
             @Override
             protected void updateItem(MarineSpecies species, boolean empty) {
@@ -74,24 +60,11 @@ public class AdminMarineSpeciesController {
             }
         });
 
-        // Add selection listeners untuk kedua ListView
-        pendingSpeciesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                selectedSpecies = newVal;
-                populateFields(newVal);
-                loadSpeciesImage(newVal.getId());
-                // Clear selection di approved list
-                approvedSpeciesListView.getSelectionModel().clearSelection();
-            }
-        });
-
         approvedSpeciesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 selectedSpecies = newVal;
                 populateFields(newVal);
                 loadSpeciesImage(newVal.getId());
-                // Clear selection di pending list
-                pendingSpeciesListView.getSelectionModel().clearSelection();
             }
         });
     }
@@ -113,12 +86,12 @@ public class AdminMarineSpeciesController {
         }
     }
 
-    private void loadApprovedSpecies() {
+    private void refreshList() {
         try {
-            ObservableList<MarineSpecies> approvedSpecies = marineSpeciesDAO.getAllApprovedSpecies();
-            approvedSpeciesListView.setItems(approvedSpecies);
+            ObservableList<MarineSpecies> speciesList = marineSpeciesDAO.getAllMarineSpecies();
+            approvedSpeciesListView.setItems(speciesList);
         } catch (Exception e) {
-            System.err.println("Error loading approved species: " + e.getMessage());
+            System.err.println("Error refreshing species list: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -154,62 +127,6 @@ public class AdminMarineSpeciesController {
             } catch (IOException e) {
                 AlertUtils.showError("Error", "Gagal memproses file gambar: " + e.getMessage());
             }
-        }
-    }
-
-    @FXML
-    private void approveSpecies() {
-        MarineSpecies selected = pendingSpeciesListView.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            try {
-                marineSpeciesDAO.approveSpecies(selected.getId());
-                refreshLists();
-                AlertUtils.showInfo("Sukses", "Species berhasil disetujui!");
-            } catch (Exception e) {
-                System.err.println("Error approving species: " + e.getMessage());
-                e.printStackTrace();
-                AlertUtils.showError("Error", "Gagal menyetujui species: " + e.getMessage());
-            }
-        }
-    }
-
-    @FXML
-    private void rejectSpecies() {
-        MarineSpecies selected = pendingSpeciesListView.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            try {
-                marineSpeciesDAO.rejectSpecies(selected.getId());
-                refreshLists();
-                AlertUtils.showInfo("Sukses", "Species berhasil ditolak!");
-            } catch (Exception e) {
-                System.err.println("Error rejecting species: " + e.getMessage());
-                e.printStackTrace();
-                AlertUtils.showError("Error", "Gagal menolak species: " + e.getMessage());
-            }
-        }
-    }
-
-    private void refreshLists() {
-        try {
-            // Refresh kedua daftar species
-            ObservableList<MarineSpecies> pendingSpecies = marineSpeciesDAO.getAllPendingSpecies();
-            ObservableList<MarineSpecies> approvedSpecies = marineSpeciesDAO.getAllApprovedSpecies();
-            
-            // Update kedua ListView
-            pendingSpeciesListView.setItems(pendingSpecies);
-            approvedSpeciesListView.setItems(approvedSpecies);
-            
-            // Clear selection dan fields
-            pendingSpeciesListView.getSelectionModel().clearSelection();
-            approvedSpeciesListView.getSelectionModel().clearSelection();
-            clearFields();
-            
-            // Clear preview image
-            previewImage.setImage(null);
-        } catch (Exception e) {
-            System.err.println("Error refreshing lists: " + e.getMessage());
-            e.printStackTrace();
-            AlertUtils.showError("Error", "Gagal memperbarui daftar species");
         }
     }
 
@@ -251,14 +168,13 @@ public class AdminMarineSpeciesController {
             MarineSpecies newSpecies = new MarineSpecies(
                 0, imageUrl, name, latinName, description, type
             );
-
-            // Simpan species dengan gambar (langsung approved)
+            
+            // Simpan species dengan gambar
             marineSpeciesDAO.addSpecies(newSpecies, imageData);
             
             AlertUtils.showInfo("Sukses", "Species berhasil ditambahkan!");
             clearFields();
-            refreshLists();
-            
+            refreshList();
         } catch (Exception e) {
             AlertUtils.showError("Error", "Gagal menambahkan species: " + e.getMessage());
             e.printStackTrace();
@@ -308,7 +224,7 @@ public class AdminMarineSpeciesController {
             marineSpeciesDAO.updateSpecies(selected, imageData);
             
             // Refresh lists dan tampilan
-            refreshLists();
+            refreshList();
             clearFields();
             previewImage.setImage(null);
             
@@ -336,7 +252,7 @@ public class AdminMarineSpeciesController {
                 marineSpeciesDAO.deleteSpecies(selected.getId());
                 
                 // Refresh tampilan
-                refreshLists();
+                refreshList();
                 clearFields();
                 
                 // Refresh tampilan utama jika ada

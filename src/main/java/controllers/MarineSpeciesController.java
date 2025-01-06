@@ -95,7 +95,7 @@ public class MarineSpeciesController {
     private void handleDelete() {
         if (AlertUtils.showConfirmation("Konfirmasi", "Apakah Anda yakin ingin menghapus species ini?")) {
             try {
-                marineSpeciesDAO.deleteMarineSpecies(currentSpecies.getId());
+                marineSpeciesDAO.deleteSpecies(currentSpecies.getId());
                 AlertUtils.showInfo("Sukses", "Species berhasil dihapus!");
                 
                 if (mainController != null) {
