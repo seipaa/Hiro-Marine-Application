@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.File;
 
 import models.Challenge;
 
@@ -16,17 +17,16 @@ public class ChallengeDAO extends BaseDAO {
 
     // Membuat objek Challenge dari ResultSet
     private Challenge createChallengeFromResultSet(ResultSet rs) throws SQLException {
-        int id = rs.getInt("id");
-        String title = rs.getString("title");
-        String description = rs.getString("description");
-        int points = rs.getInt("points");
-        String imageUrl = rs.getString("image_url");
-        String qrCodeUrl = rs.getString("qr_code_url");
-        String startDate = rs.getString("start_date") != null ? rs.getString("start_date") : "defaultStartDate";
-        String endDate = rs.getString("end_date") != null ? rs.getString("end_date") : "defaultEndDate";
-        // Inisialisasi Challenge dengan data dari ResultSet
-        Challenge challenge = new Challenge(id, title, description, points, imageUrl, qrCodeUrl, startDate, endDate);
-        return challenge;
+        return new Challenge(
+            rs.getInt("id"),
+            rs.getString("title"),
+            rs.getString("description"),
+            rs.getInt("points"),
+            rs.getString("image_url"),
+            rs.getString("qr_code_url"),
+            rs.getString("start_date"),
+            rs.getString("end_date")
+        );
     }
 
     // Mendapatkan Challenge berdasarkan ID
@@ -55,13 +55,22 @@ public class ChallengeDAO extends BaseDAO {
     // Tambahkan metode CRUD lainnya sesuai kebutuhan
 
     public void addChallenge(Challenge challenge) throws SQLException {
-        String query = "INSERT INTO challenges (title, description, points, image_url, qr_code_url, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO challenges (title, description, points, image_url, qr_code_url, start_date, end_date) " +
+                      "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = getConnection();
              PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setString(1, challenge.getTitle());
             stmt.setString(2, challenge.getDescription());
             stmt.setInt(3, challenge.getPoints());
-            stmt.setString(4, challenge.getImageUrl());
+            
+            // Pastikan image_url disimpan dengan format yang benar
+            String imageUrl = challenge.getImageUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                // Jika path absolut, ambil nama filenya saja
+                imageUrl = new File(imageUrl).getName();
+            }
+            stmt.setString(4, imageUrl);
+            
             stmt.setString(5, challenge.getQrCodeUrl());
             stmt.setString(6, challenge.getStartDate());
             stmt.setString(7, challenge.getEndDate());
@@ -163,12 +172,15 @@ public class ChallengeDAO extends BaseDAO {
 
     public List<Challenge> getAllChallenges() throws SQLException {
         List<Challenge> challenges = new ArrayList<>();
-        String query = "SELECT * FROM challenges";
+        String query = "SELECT * FROM challenges ORDER BY id DESC";
+        
         try (Connection con = getConnection();
              PreparedStatement stmt = con.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
+            
             while (rs.next()) {
-                challenges.add(createChallengeFromResultSet(rs));
+                Challenge challenge = createChallengeFromResultSet(rs);
+                challenges.add(challenge);
             }
         }
         return challenges;

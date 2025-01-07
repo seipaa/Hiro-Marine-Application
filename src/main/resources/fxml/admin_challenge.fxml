@@ -33,6 +33,7 @@
                         <TableColumn fx:id="userPointsColumn" text="Current Points" prefWidth="100"/>
                         <TableColumn fx:id="challengeColumn" text="Challenge" prefWidth="200"/>
                         <TableColumn fx:id="challengePointsColumn" text="Challenge Points" prefWidth="100"/>
+                        <TableColumn fx:id="pointsAwardedColumn" text="Poin Diberikan" prefWidth="100"/>
                         <TableColumn fx:id="verifyColumn" text="Action" prefWidth="100"/>
                     </columns>
                 </TableView>

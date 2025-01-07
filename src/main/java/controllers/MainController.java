@@ -41,6 +41,10 @@ import utils.AlertUtils;
 import utils.ChallengeDetailsFetcher;
 import utils.DatabaseHelper;
 import utils.LeaderboardFetcher;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
+import dao.ChallengeDAO;
 
 public class MainController {
 
@@ -157,6 +161,10 @@ public class MainController {
     private List<News> newsCache;
     private Map<Integer, Image> imageCache = new HashMap<>();
 
+    private Timeline leaderboardRefreshTimeline;
+
+    private ChallengeDAO challengeDAO = new ChallengeDAO();
+
     public void setCurrentUser(User user) {
         this.currentUser = user;
         if (user != null && usernameLabel != null) {
@@ -219,6 +227,13 @@ public class MainController {
         
         // Load initial leaderboard
         updateLeaderboard();
+        
+        // Setup auto-refresh leaderboard setiap 30 detik
+        leaderboardRefreshTimeline = new Timeline(
+            new KeyFrame(Duration.seconds(30), event -> updateLeaderboard())
+        );
+        leaderboardRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
+        leaderboardRefreshTimeline.play();
     }
 
     private void setupTabListeners() {
@@ -659,10 +674,8 @@ public class MainController {
     public void updateLeaderboard() {
         Platform.runLater(() -> {
             try {
-                // Ambil data top users terbaru
                 List<User> topUsers = leaderboardFetcher.getTopUsers();
                 
-                // Update labels leaderboard
                 if (topUsers.size() >= 1) {
                     firstPlaceLabel.setText(topUsers.get(0).getName());
                     firstPlacePoints.setText(topUsers.get(0).getTotalPoints() + " pts");
@@ -678,10 +691,13 @@ public class MainController {
                     thirdPlacePoints.setText(topUsers.get(2).getTotalPoints() + " pts");
                 }
                 
-                // Update next rank untuk current user jika ada
+                // Update next rank untuk current user
                 if (currentUser != null) {
                     updateNextRank(currentUser.getId());
                 }
+                
+                // Refresh challenges juga
+                refreshChallenges();
                 
             } catch (Exception e) {
                 System.err.println("Error updating leaderboard: " + e.getMessage());
@@ -1064,156 +1080,121 @@ public class MainController {
     }
 
     public void refreshChallenges() {
+        System.out.println("Refreshing challenges...");
+        
+        if (currentUser == null && currentAdmin == null) {
+            System.out.println("No user or admin logged in!");
+            return;
+        }
+
         Platform.runLater(() -> {
             try {
-                System.out.println("Refreshing challenges...");
+                // Clear existing challenges
+                if (challengeListContainer != null) {
+                    challengeListContainer.getChildren().clear();
+                }
 
-                if (challengeListContainer == null) {
-                    System.err.println("Error: challengeListContainer is null!");
+                // Get challenges from database
+                List<Challenge> challenges = challengeDAO.getAllChallenges();
+                
+                if (challenges.isEmpty()) {
+                    Label noDataLabel = new Label("Tidak ada challenge yang tersedia");
+                    noDataLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+                    challengeListContainer.getChildren().add(noDataLabel);
                     return;
                 }
 
-                challengeListContainer.getChildren().clear();
-
-                // Query berbeda untuk admin dan user
-                String query;
-                if (isAdmin && currentAdmin != null) {  // Pastikan admin sudah login
-                    query = "SELECT * FROM challenges ORDER BY start_date DESC";
-                } else if (currentUser != null) {  // Pastikan user sudah login
-                    query = "SELECT c.*, " +
-                            "(SELECT status FROM user_challenges uc " +
-                            "WHERE uc.challenge_id = c.id AND uc.user_id = ? AND uc.status = 'COMPLETED') as completion_status " +
-                            "FROM challenges c ORDER BY c.start_date DESC";
-                } else {
-                    System.err.println("No user or admin logged in!");
-                    return;  // Keluar jika tidak ada yang login
-                }
-
-                try (Connection conn = DatabaseHelper.getConnection();
-                     PreparedStatement stmt = conn.prepareStatement(query)) {
-
-                    ResultSet rs;
-                    if (!isAdmin && currentUser != null) {
-                        stmt.setInt(1, currentUser.getId());
-                    }
-                    rs = stmt.executeQuery();
-
-                    while (rs.next()) {
-                        Challenge challenge = new Challenge(
-                                rs.getInt("id"),
-                                rs.getString("title"),
-                                rs.getString("description"),
-                                rs.getInt("points"),
-                                rs.getString("image_url"),
-                                rs.getString("qr_code_url"),
-                                rs.getString("start_date"),
-                                rs.getString("end_date")
-                        );
-
-                        boolean isVerified = false;
-                        if (!isAdmin && currentUser != null) {
-                            isVerified = rs.getString("completion_status") != null;
-                        }
-
-                        createChallengeCard(challenge, isVerified);
+                // Create and add challenge cards
+                for (Challenge challenge : challenges) {
+                    VBox challengeCard = createChallengeCard(challenge);
+                    if (challengeListContainer != null) {
+                        challengeListContainer.getChildren().add(challengeCard);
                     }
                 }
-            } catch (SQLException e) {
+            } catch (Exception e) {
+                System.err.println("Error refreshing challenges: " + e.getMessage());
                 e.printStackTrace();
-                AlertUtils.showError("Error", "Gagal memuat challenge: " + e.getMessage());
             }
         });
     }
 
-    private void createChallengeCard(Challenge challenge, boolean isVerified) {
-        // Create challenge card
-        StackPane card = new StackPane();
-        card.setPrefWidth(600);
-        card.setPrefHeight(200);
-        card.setStyle("-fx-background-radius: 10;");
+    private VBox createChallengeCard(Challenge challenge) {
+        VBox card = new VBox(10);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: rgba(255, 255, 255, 0.1); " +
+                      "-fx-background-radius: 10; " +
+                      "-fx-padding: 15;");
 
-        // Background image setup...
-        ImageView backgroundImage = setupBackgroundImage(challenge);
-        Rectangle overlay = new Rectangle(600, 200);
-        overlay.setFill(Color.rgb(26, 34, 56, 0.85));
+        // Setup background image dengan fallback
+        try {
+            String imageUrl = challenge.getImageUrl();
+            Image backgroundImage = null;
+            
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                try {
+                    if (imageUrl.startsWith("http") || imageUrl.startsWith("file:")) {
+                        backgroundImage = new Image(imageUrl);
+                    } else {
+                        backgroundImage = new Image(getClass().getResourceAsStream("/images/" + imageUrl));
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error loading challenge image: " + e.getMessage());
+                }
+            }
+            
+            // Jika gagal load image atau tidak ada image, gunakan default
+            if (backgroundImage == null || backgroundImage.isError()) {
+                try {
+                    backgroundImage = new Image(getClass().getResourceAsStream("/images/default_challenge.jpg"));
+                } catch (Exception e) {
+                    System.err.println("Error loading default challenge image: " + e.getMessage());
+                }
+            }
 
-        // Content container
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(20));
+            // Set background jika image berhasil dimuat
+            if (backgroundImage != null && !backgroundImage.isError()) {
+                BackgroundImage bgImage = new BackgroundImage(
+                    backgroundImage,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundPosition.CENTER,
+                    new BackgroundSize(100, 100, true, true, true, true)
+                );
+                card.setBackground(new Background(bgImage));
+            }
+        } catch (Exception e) {
+            System.err.println("Error setting challenge card background: " + e.getMessage());
+        }
 
-        // Header with title and verification badge if verified
-        HBox header = new HBox(10);
-        header.setAlignment(Pos.CENTER_LEFT);
-
-        // Title
+        // Challenge title
         Label titleLabel = new Label(challenge.getTitle());
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2196F3;");
-        header.getChildren().add(titleLabel);
+        titleLabel.setWrapText(true);
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
 
-        // Add verification badge if verified (hanya untuk user biasa)
-        if (!isAdmin && isVerified) {
-            HBox verifiedBadge = new HBox(5);
-            verifiedBadge.setAlignment(Pos.CENTER);
-            verifiedBadge.setStyle(
-                    "-fx-background-color: #4CAF50;" +
-                            "-fx-padding: 5 10;" +
-                            "-fx-background-radius: 15;"
-            );
+        // Points badge
+        Label pointsLabel = new Label(challenge.getPoints() + " Points");
+        pointsLabel.setStyle("-fx-background-color: #4CAF50; " +
+                            "-fx-text-fill: white; " +
+                            "-fx-padding: 5 10; " +
+                            "-fx-background-radius: 15;");
 
-            Label checkIcon = new Label("✓");
-            checkIcon.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        // Add hover effect
+        card.setOnMouseEntered(e -> {
+            card.setStyle(card.getStyle() + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 10, 0, 0, 0);");
+            card.setCursor(Cursor.HAND);
+        });
 
-            Label verifiedText = new Label("Terverifikasi");
-            verifiedText.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+        card.setOnMouseExited(e -> {
+            card.setStyle(card.getStyle().replace("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 10, 0, 0, 0);", ""));
+            card.setCursor(Cursor.DEFAULT);
+        });
 
-            verifiedBadge.getChildren().addAll(checkIcon, verifiedText);
-            header.getChildren().add(verifiedBadge);
-        }
+        // Add click handler
+        card.setOnMouseClicked(e -> displayChallengeDetails(challenge));
 
-        // Date
-        Label dateLabel = new Label("📅 " + challenge.getStartDate());
-        dateLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: white;");
-
-        // Description
-        Label descLabel = new Label(challenge.getDescription());
-        descLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #a0a8c0;");
-        descLabel.setWrapText(true);
-
-        // Points
-        Label pointsLabel = new Label("🏆 " + challenge.getPoints() + " points");
-        pointsLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #4CAF50; -fx-font-weight: bold;");
-
-        // View Details button
-        Button detailsButton = new Button("View Details");
-        detailsButton.setStyle(
-                "-fx-background-color: #2196F3; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-padding: 8 20; " +
-                        "-fx-background-radius: 20;"
-        );
-        detailsButton.setOnAction(e -> displayChallengeDetails(challenge));
-
-        // Add all elements to content
-        content.getChildren().addAll(header, dateLabel, descLabel, pointsLabel, detailsButton);
-
-        // Add all layers to card
-        card.getChildren().addAll(backgroundImage, overlay, content);
-
-        // Add card to challenge list
-        challengeListContainer.getChildren().add(card);
-    }
-
-    private ImageView setupBackgroundImage(Challenge challenge) {
-        String imagePath = "/images/" + challenge.getImageUrl();
-        Image image = new Image(getClass().getResourceAsStream(imagePath));
-        if (image.isError()) {
-            image = new Image(getClass().getResourceAsStream("/images/default_challenge.jpg"));
-        }
-        ImageView backgroundImage = new ImageView(image);
-        backgroundImage.setFitWidth(600);
-        backgroundImage.setFitHeight(200);
-        backgroundImage.setPreserveRatio(false);
-        return backgroundImage;
+        // Add components to card
+        card.getChildren().addAll(titleLabel, pointsLabel);
+        return card;
     }
 
     private String formatDate(String dateStr) {
@@ -1567,5 +1548,11 @@ public class MainController {
         setupButtonHoverEffect(recommendationAdminButton, "#FF9800", "#FFC107");
         setupButtonHoverEffect(challengeAdminButton, "#F44336", "#E57373");
         setupButtonHoverEffect(userAdminButton, "#9C27B0", "#BA68C8");
+    }
+
+    public void dispose() {
+        if (leaderboardRefreshTimeline != null) {
+            leaderboardRefreshTimeline.stop();
+        }
     }
 }

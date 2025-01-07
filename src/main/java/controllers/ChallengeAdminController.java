@@ -17,24 +17,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import models.Challenge;
 import utils.AlertUtils;
 import utils.DatabaseConnection;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 public class ChallengeAdminController {
     // Form fields
@@ -65,6 +57,9 @@ public class ChallengeAdminController {
     @FXML private TableColumn<VerificationItem, String> challengeColumn;
     @FXML private TableColumn<VerificationItem, Integer> challengePointsColumn;
     @FXML private TableColumn<VerificationItem, Void> verifyColumn;
+
+    // Tambahkan field baru
+    @FXML private Spinner<Integer> pointsSpinner;
 
     private ChallengeDAO challengeDAO = new ChallengeDAO();
     private UserDAO userDAO = new UserDAO();
@@ -135,19 +130,39 @@ public class ChallengeAdminController {
         verifyColumn.setCellFactory(column -> {
             return new TableCell<VerificationItem, Void>() {
                 private final Button verifyBtn = new Button("Verifikasi");
+                private final Spinner<Integer> pointSpinner = new Spinner<>(0, 100, 100);
+                private final HBox container = new HBox(5);
 
                 {
+                    pointSpinner.setEditable(true);
+                    pointSpinner.setPrefWidth(80);
+                    
                     verifyBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
                     verifyBtn.setOnAction(event -> {
                         VerificationItem item = getTableView().getItems().get(getIndex());
-                        verifyChallenge(item);
+                        // Gunakan nilai dari spinner
+                        int awardedPoints = pointSpinner.getValue();
+                        verifyChallenge(item, awardedPoints);
                     });
+                    
+                    container.getChildren().addAll(pointSpinner, verifyBtn);
+                    container.setAlignment(Pos.CENTER);
                 }
 
                 @Override
                 protected void updateItem(Void item, boolean empty) {
                     super.updateItem(item, empty);
-                    setGraphic(empty ? null : verifyBtn);
+                    if (empty) {
+                        setGraphic(null);
+                    } else {
+                        VerificationItem verificationItem = getTableView().getItems().get(getIndex());
+                        pointSpinner.setValueFactory(
+                            new SpinnerValueFactory.IntegerSpinnerValueFactory(
+                                0, verificationItem.getChallengePoints(), verificationItem.getChallengePoints()
+                            )
+                        );
+                        setGraphic(container);
+                    }
                 }
             };
         });
@@ -564,14 +579,14 @@ public class ChallengeAdminController {
         }
     }
 
-    private void verifyChallenge(VerificationItem item) {
+    private void verifyChallenge(VerificationItem item, int awardedPoints) {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
             
-            // Update points dan status
-            updateUserPoints(conn, item);
+            // Update points dengan nilai yang diberikan admin
+            updateUserPoints(conn, item, awardedPoints);
             insertUserChallenge(conn, item);
             
             conn.commit();
@@ -589,9 +604,9 @@ public class ChallengeAdminController {
                     }
                     
                     AlertUtils.showInfo("Success", String.format(
-                        "Challenge berhasil diverifikasi!\nUser: %s\nPoin bertambah: +%d",
+                        "Challenge berhasil diverifikasi!\nUser: %s\nPoin diberikan: +%d",
                         item.getUserName(),
-                        item.getChallengePoints()
+                        awardedPoints
                     ));
                 } catch (SQLException ex) {
                     AlertUtils.showError("Error", "Gagal memperbarui tampilan: " + ex.getMessage());
@@ -637,10 +652,10 @@ public class ChallengeAdminController {
         public int getChallengePoints() { return challengePoints; }
     }
 
-    private void updateUserPoints(Connection conn, VerificationItem item) throws SQLException {
+    private void updateUserPoints(Connection conn, VerificationItem item, int awardedPoints) throws SQLException {
         String updatePointsQuery = "UPDATE users SET total_points = total_points + ? WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(updatePointsQuery)) {
-            stmt.setInt(1, item.getChallengePoints());
+            stmt.setInt(1, awardedPoints);
             stmt.setInt(2, item.getUserId());
             int updated = stmt.executeUpdate();
             if (updated == 0) throw new SQLException("Gagal menambahkan poin");
