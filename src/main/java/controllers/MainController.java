@@ -2,6 +2,7 @@ package controllers;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 import dao.MarineSpeciesDAO;
 import dao.NewsDAO;
@@ -41,8 +43,13 @@ import utils.AlertUtils;
 import utils.ChallengeDetailsFetcher;
 import utils.DatabaseHelper;
 import utils.LeaderboardFetcher;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 public class MainController {
+
+    private static final int maxPoints = 100; // Definisikan maxPoints
 
     @FXML
     private TabPane tabPane;
@@ -157,6 +164,8 @@ public class MainController {
     private List<News> newsCache;
     private Map<Integer, Image> imageCache = new HashMap<>();
 
+    private Timeline leaderboardRefreshTimeline;
+
     public void setCurrentUser(User user) {
         this.currentUser = user;
         if (user != null && usernameLabel != null) {
@@ -216,6 +225,8 @@ public class MainController {
         setupTabListeners();
         setupSearchListeners();
         setupButtonStyles();
+        setupLeaderboardAutoRefresh();
+        updateLeaderboard(); // Panggil updateLeaderboard saat aplikasi dimulai
     }
 
     private void setupTabListeners() {
@@ -594,6 +605,7 @@ public class MainController {
 
             ChallengeDetailsController controller = loader.getController();
             controller.setCurrentUser(currentUser);
+            controller.setMainController(this);
             controller.loadChallengeDetails(challenge);
 
             Stage stage = new Stage();
@@ -640,6 +652,27 @@ public class MainController {
             adminController = loader.getController();
             adminController.setMainController(this);
 
+            // Tambahkan kontrol input untuk mengatur poin
+            TextField pointInput = new TextField();
+            pointInput.setPromptText("Set points (0 - max)");
+            pointInput.setOnAction(e -> {
+                try {
+                    int points = Integer.parseInt(pointInput.getText());
+                    if (points < 0 || points > maxPoints) {
+                        throw new NumberFormatException("Points out of range");
+                    }
+                    // Set points logic
+                    // ... existing code ...
+                } catch (NumberFormatException ex) {
+                    showError("Invalid Input", "Please enter a valid number within the range.");
+                }
+            });
+
+            // Tambahkan kontrol input ke panel admin
+            VBox adminControls = new VBox(10);
+            adminControls.getChildren().add(pointInput);
+            ((VBox) root).getChildren().add(adminControls);
+
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Admin Panel");
@@ -656,28 +689,33 @@ public class MainController {
         System.out.print("Updating leaderboard...\n");
         try {
             UserDAO userDAO = new UserDAO();
-            List<User> topUsers = userDAO.getTopThreeUsers();
+            final List<User> topUsers = userDAO.getTopThreeUsers();
+
+            // Filter out frozen or banned users
+            List<User> filteredTopUsers = topUsers.stream()
+                    .filter(user -> !user.isFrozen() && !user.isBanned())
+                    .collect(Collectors.toList());
 
             Platform.runLater(() -> {
-                if (topUsers.size() >= 1) {
-                    User firstPlace = topUsers.get(0);
+                if (filteredTopUsers.size() >= 1) {
+                    User firstPlace = filteredTopUsers.get(0);
                     firstPlaceLabel.setText(firstPlace.getName());
                     firstPlacePoints.setText(firstPlace.getTotalPoints() + " pts");
                 }
-                if (topUsers.size() >= 2) {
-                    User secondPlace = topUsers.get(1);
+                if (filteredTopUsers.size() >= 2) {
+                    User secondPlace = filteredTopUsers.get(1);
                     secondPlaceLabel.setText(secondPlace.getName());
                     secondPlacePoints.setText(secondPlace.getTotalPoints() + " pts");
                 }
-                if (topUsers.size() >= 3) {
-                    User thirdPlace = topUsers.get(2);
+                if (filteredTopUsers.size() >= 3) {
+                    User thirdPlace = filteredTopUsers.get(2);
                     thirdPlaceLabel.setText(thirdPlace.getName());
                     thirdPlacePoints.setText(thirdPlace.getTotalPoints() + " pts");
                 }
 
                 // Update next rank info for current user
                 if (currentUser != null) {
-                    updateNextRankInfo(currentUser, topUsers);
+                    updateNextRankInfo(currentUser, filteredTopUsers);
                 }
             });
 
@@ -906,7 +944,12 @@ public class MainController {
     private void startChallenge(ActionEvent event) {
         Button sourceButton = (Button) event.getSource();
         String challengeTitle = sourceButton.getText();
+        
+        // Panggil updateLeaderboard segera setelah tantangan dimulai
+        updateLeaderboard();
+        
         // Logika untuk memulai challenge dan mengupdate progress
+        // ... existing code ...
     }
 
     @FXML
@@ -1075,7 +1118,8 @@ public class MainController {
                     return;
                 }
 
-                challengeListContainer.getChildren().clear();
+                // Jangan hapus tantangan yang ada
+                // challengeListContainer.getChildren().clear();
 
                 // Query berbeda untuk admin dan user
                 String query;
@@ -1117,7 +1161,11 @@ public class MainController {
                             isVerified = rs.getString("completion_status") != null;
                         }
 
-                        createChallengeCard(challenge, isVerified);
+                        // Buat kartu tantangan
+                        Node challengeCard = createChallengeCard(challenge, isVerified);
+
+                        // Tambahkan tantangan baru ke bagian atas daftar
+                        challengeListContainer.getChildren().add(0, challengeCard);
                     }
                 }
             } catch (SQLException e) {
@@ -1127,7 +1175,7 @@ public class MainController {
         });
     }
 
-    private void createChallengeCard(Challenge challenge, boolean isVerified) {
+    private Node createChallengeCard(Challenge challenge, boolean isVerified) {
         // Create challenge card
         StackPane card = new StackPane();
         card.setPrefWidth(600);
@@ -1201,14 +1249,21 @@ public class MainController {
         // Add all layers to card
         card.getChildren().addAll(backgroundImage, overlay, content);
 
-        // Add card to challenge list
-        challengeListContainer.getChildren().add(card);
+        // Return the card as a Node
+        return card;
     }
 
     private ImageView setupBackgroundImage(Challenge challenge) {
         String imagePath = "/images/" + challenge.getImageUrl();
-        Image image = new Image(getClass().getResourceAsStream(imagePath));
-        if (image.isError()) {
+        Image image = null;
+        try {
+            InputStream imageStream = getClass().getResourceAsStream(imagePath);
+            if (imageStream == null) {
+                throw new Exception("Image not found");
+            }
+            image = new Image(imageStream);
+        } catch (Exception e) {
+            System.err.println("Error loading challenge image: " + e.getMessage());
             image = new Image(getClass().getResourceAsStream("/images/default_challenge.jpg"));
         }
         ImageView backgroundImage = new ImageView(image);
@@ -1569,5 +1624,20 @@ public class MainController {
         setupButtonHoverEffect(recommendationAdminButton, "#FF9800", "#FFC107");
         setupButtonHoverEffect(challengeAdminButton, "#F44336", "#E57373");
         setupButtonHoverEffect(userAdminButton, "#9C27B0", "#BA68C8");
+    }
+
+    private void setupLeaderboardAutoRefresh() {
+        leaderboardRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(30), event -> {
+            Platform.runLater(this::updateLeaderboard);
+        }));
+        leaderboardRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
+        leaderboardRefreshTimeline.play();
+    }
+
+    public void dispose() {
+        if (leaderboardRefreshTimeline != null) {
+            leaderboardRefreshTimeline.stop();
+        }
+        // ... existing code ...
     }
 }

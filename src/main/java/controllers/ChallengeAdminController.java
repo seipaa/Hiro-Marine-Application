@@ -17,16 +17,24 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import models.Challenge;
 import utils.AlertUtils;
 import utils.DatabaseConnection;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
-import javafx.scene.control.cell.PropertyValueFactory;
 
 public class ChallengeAdminController {
     // Form fields
@@ -57,9 +65,6 @@ public class ChallengeAdminController {
     @FXML private TableColumn<VerificationItem, String> challengeColumn;
     @FXML private TableColumn<VerificationItem, Integer> challengePointsColumn;
     @FXML private TableColumn<VerificationItem, Void> verifyColumn;
-
-    // Tambahkan field baru
-    @FXML private Spinner<Integer> pointsSpinner;
 
     private ChallengeDAO challengeDAO = new ChallengeDAO();
     private UserDAO userDAO = new UserDAO();
@@ -130,39 +135,19 @@ public class ChallengeAdminController {
         verifyColumn.setCellFactory(column -> {
             return new TableCell<VerificationItem, Void>() {
                 private final Button verifyBtn = new Button("Verifikasi");
-                private final Spinner<Integer> pointSpinner = new Spinner<>(0, 100, 100);
-                private final HBox container = new HBox(5);
 
                 {
-                    pointSpinner.setEditable(true);
-                    pointSpinner.setPrefWidth(80);
-                    
                     verifyBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
                     verifyBtn.setOnAction(event -> {
                         VerificationItem item = getTableView().getItems().get(getIndex());
-                        // Gunakan nilai dari spinner
-                        int awardedPoints = pointSpinner.getValue();
-                        verifyChallenge(item, awardedPoints);
+                        verifyChallenge(item);
                     });
-                    
-                    container.getChildren().addAll(pointSpinner, verifyBtn);
-                    container.setAlignment(Pos.CENTER);
                 }
 
                 @Override
                 protected void updateItem(Void item, boolean empty) {
                     super.updateItem(item, empty);
-                    if (empty) {
-                        setGraphic(null);
-                    } else {
-                        VerificationItem verificationItem = getTableView().getItems().get(getIndex());
-                        pointSpinner.setValueFactory(
-                            new SpinnerValueFactory.IntegerSpinnerValueFactory(
-                                0, verificationItem.getChallengePoints(), verificationItem.getChallengePoints()
-                            )
-                        );
-                        setGraphic(container);
-                    }
+                    setGraphic(empty ? null : verifyBtn);
                 }
             };
         });
@@ -579,19 +564,33 @@ public class ChallengeAdminController {
         }
     }
 
-    private void verifyChallenge(VerificationItem item, int awardedPoints) {
+    private void verifyChallenge(VerificationItem item) {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
             
-            // Update points dengan nilai yang diberikan admin
-            updateUserPoints(conn, item, awardedPoints);
-            insertUserChallenge(conn, item);
-            
+            // 1. Update points user
+            String updatePointsQuery = "UPDATE users SET total_points = total_points + ? WHERE id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(updatePointsQuery)) {
+                stmt.setInt(1, item.getChallengePoints());
+                stmt.setInt(2, item.getUserId());
+                int updated = stmt.executeUpdate();
+                if (updated == 0) throw new SQLException("Gagal menambahkan poin");
+            }
+
+            // 2. Insert ke user_challenges
+            String insertQuery = "INSERT INTO user_challenges (user_id, challenge_id, status, completed_at) VALUES (?, ?, 'COMPLETED', CURRENT_TIMESTAMP)";
+            try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
+                stmt.setInt(1, item.getUserId());
+                stmt.setInt(2, item.getChallengeId());
+                int inserted = stmt.executeUpdate();
+                if (inserted == 0) throw new SQLException("Gagal mencatat challenge");
+            }
+
             conn.commit();
             
-            // Refresh UI
+            // Refresh data setelah commit berhasil
             Platform.runLater(() -> {
                 try {
                     loadVerificationItems();
@@ -604,9 +603,9 @@ public class ChallengeAdminController {
                     }
                     
                     AlertUtils.showInfo("Success", String.format(
-                        "Challenge berhasil diverifikasi!\nUser: %s\nPoin diberikan: +%d",
+                        "Challenge berhasil diverifikasi!\nUser: %s\nPoin bertambah: +%d",
                         item.getUserName(),
-                        awardedPoints
+                        item.getChallengePoints()
                     ));
                 } catch (SQLException ex) {
                     AlertUtils.showError("Error", "Gagal memperbarui tampilan: " + ex.getMessage());
@@ -614,9 +613,23 @@ public class ChallengeAdminController {
             });
             
         } catch (SQLException e) {
-            handleTransactionError(conn, e);
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            AlertUtils.showError("Error", "Gagal memverifikasi challenge: " + e.getMessage());
         } finally {
-            closeConnection(conn);
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -650,48 +663,5 @@ public class ChallengeAdminController {
         public int getChallengeId() { return challengeId; }
         public String getChallengeTitle() { return challengeTitle; }
         public int getChallengePoints() { return challengePoints; }
-    }
-
-    private void updateUserPoints(Connection conn, VerificationItem item, int awardedPoints) throws SQLException {
-        String updatePointsQuery = "UPDATE users SET total_points = total_points + ? WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(updatePointsQuery)) {
-            stmt.setInt(1, awardedPoints);
-            stmt.setInt(2, item.getUserId());
-            int updated = stmt.executeUpdate();
-            if (updated == 0) throw new SQLException("Gagal menambahkan poin");
-        }
-    }
-
-    private void insertUserChallenge(Connection conn, VerificationItem item) throws SQLException {
-        String insertQuery = "INSERT INTO user_challenges (user_id, challenge_id, status, completed_at) " +
-                            "VALUES (?, ?, 'COMPLETED', CURRENT_TIMESTAMP)";
-        try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
-            stmt.setInt(1, item.getUserId());
-            stmt.setInt(2, item.getChallengeId());
-            int inserted = stmt.executeUpdate();
-            if (inserted == 0) throw new SQLException("Gagal mencatat challenge");
-        }
-    }
-
-    private void handleTransactionError(Connection conn, SQLException e) {
-        if (conn != null) {
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        }
-        AlertUtils.showError("Error", "Gagal memverifikasi challenge: " + e.getMessage());
-    }
-
-    private void closeConnection(Connection conn) {
-        if (conn != null) {
-            try {
-                conn.setAutoCommit(true);
-                conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
     }
 } 

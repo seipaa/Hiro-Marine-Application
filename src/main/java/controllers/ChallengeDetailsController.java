@@ -28,7 +28,6 @@ import models.Challenge;
 import models.Comment;
 import models.User;
 import utils.QRCodeGenerator;
-import controllers.MainController;
 
 public class ChallengeDetailsController {
 

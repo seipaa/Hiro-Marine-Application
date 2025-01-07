@@ -88,6 +88,14 @@ public class User {
         this.joinDate = joinDate;
     }
 
+    public boolean isFrozen() {
+        return "FROZEN".equalsIgnoreCase(this.status);
+    }
+
+    public boolean isBanned() {
+        return "BANNED".equalsIgnoreCase(this.status);
+    }
+
     @Override
     public String toString() {
         return name;
