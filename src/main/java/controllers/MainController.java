@@ -1910,14 +1910,134 @@ public class MainController {
     }
 
     private StackPane createRegularNewsCard(News news) {
+        StackPane card = new StackPane();
+        card.setPrefWidth(300);
+        card.setPrefHeight(200);
+        card.setStyle("-fx-background-color: rgba(255, 255, 255, 0.1); " +
+                     "-fx-background-radius: 10; " +
+                     "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 5);");
 
-        return null;
+        // Background rectangle
+        Rectangle background = new Rectangle(300, 200);
+        background.setArcHeight(20);
+        background.setArcWidth(20);
+        background.setFill(Color.web("#1a2980", 0.3));
+
+        // Content container
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(15));
+        content.setAlignment(Pos.TOP_LEFT);
+
+        // Title
+        Label titleLabel = new Label(news.getTitle());
+        titleLabel.setWrapText(true);
+        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        // Date
+        Label dateLabel = new Label(news.getCreatedAt().toString());
+        dateLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #a0a8c0;");
+
+        // Description (preview)
+        Label descLabel = new Label(news.getDescription());
+        descLabel.setWrapText(true);
+        descLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #e0e0e0;");
+        descLabel.setMaxHeight(80);
+
+        content.getChildren().addAll(titleLabel, dateLabel, descLabel);
+
+        // Add hover effect
+        card.setOnMouseEntered(e -> {
+            background.setFill(Color.web("#1a2980", 0.5));
+            card.setStyle("-fx-background-color: rgba(255, 255, 255, 0.15); " +
+                         "-fx-background-radius: 10; " +
+                         "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 12, 0, 0, 6); " +
+                         "-fx-cursor: hand;");
+        });
+
+        card.setOnMouseExited(e -> {
+            background.setFill(Color.web("#1a2980", 0.3));
+            card.setStyle("-fx-background-color: rgba(255, 255, 255, 0.1); " +
+                         "-fx-background-radius: 10; " +
+                         "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 5);");
+        });
+
+        // Add click event
+        card.setOnMouseClicked(e -> showNewsDetails(news));
+
+        card.getChildren().addAll(background, content);
+        return card;
     }
 
     private StackPane createBreakingNewsCard(News news) {
-        return null;
+        StackPane card = new StackPane();
+        card.setPrefWidth(620);
+        card.setPrefHeight(180);
+        card.setStyle("-fx-background-color: rgba(255, 59, 59, 0.1); " +
+                     "-fx-background-radius: 15; " +
+                     "-fx-effect: dropshadow(gaussian, rgba(255,59,59,0.2), 10, 0, 0, 5);");
+
+        // Background rectangle with animation
+        Rectangle background = new Rectangle(620, 180);
+        background.setArcHeight(30);
+        background.setArcWidth(30);
+        background.setFill(Color.web("#ff3d3d", 0.2));
+
+        // Content container
+        VBox content = new VBox(12);
+        content.setPadding(new Insets(20));
+        content.setAlignment(Pos.CENTER_LEFT);
+
+        // Breaking news label
+        Label breakingLabel = new Label("BREAKING NEWS");
+        breakingLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #ff3d3d;");
+
+        // Title
+        Label titleLabel = new Label(news.getTitle());
+        titleLabel.setWrapText(true);
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        // Description
+        Label descLabel = new Label(news.getDescription());
+        descLabel.setWrapText(true);
+        descLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #e0e0e0;");
+
+        // Date with icon
+        HBox dateBox = new HBox(5);
+        dateBox.setAlignment(Pos.CENTER_LEFT);
+        Label clockIcon = new Label("🕒");
+        Label dateLabel = new Label(news.getCreatedAt().toString());
+        dateLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #a0a8c0;");
+        dateBox.getChildren().addAll(clockIcon, dateLabel);
+
+        content.getChildren().addAll(breakingLabel, titleLabel, descLabel, dateBox);
+
+        // Add hover effect
+        card.setOnMouseEntered(e -> {
+            background.setFill(Color.web("#ff3d3d", 0.3));
+            card.setStyle("-fx-background-color: rgba(255, 59, 59, 0.15); " +
+                         "-fx-background-radius: 15; " +
+                         "-fx-effect: dropshadow(gaussian, rgba(255,59,59,0.3), 12, 0, 0, 6); " +
+                         "-fx-cursor: hand;");
+        });
+
+        card.setOnMouseExited(e -> {
+            background.setFill(Color.web("#ff3d3d", 0.2));
+            card.setStyle("-fx-background-color: rgba(255, 59, 59, 0.1); " +
+                         "-fx-background-radius: 15; " +
+                         "-fx-effect: dropshadow(gaussian, rgba(255,59,59,0.2), 10, 0, 0, 5);");
+        });
+
+        // Add click event
+        card.setOnMouseClicked(e -> showNewsDetails(news));
+
+        card.getChildren().addAll(background, content);
+        return card;
     }
 
     public void clearSearch(ActionEvent actionEvent) {
+        if (recommendationSearchField != null) {
+            recommendationSearchField.clear();
+            refreshRecommendations();
+        }
     }
 }
