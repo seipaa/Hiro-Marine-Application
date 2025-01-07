@@ -28,6 +28,7 @@ import models.Challenge;
 import models.Comment;
 import models.User;
 import utils.QRCodeGenerator;
+import controllers.MainController;
 
 public class ChallengeDetailsController {
 
@@ -45,9 +46,14 @@ public class ChallengeDetailsController {
     private CommentDAO commentDAO = new CommentDAO();
     private Challenge currentChallenge;
     private User currentUser;
+    private MainController mainController;
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
+    }
+
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
     }
 
     public void loadChallengeDetails(Challenge challenge) {
