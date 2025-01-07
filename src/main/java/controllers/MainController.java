@@ -1,6 +1,5 @@
 package controllers;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,8 +8,6 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 import dao.MarineSpeciesDAO;
 import dao.NewsDAO;
@@ -149,13 +146,9 @@ public class MainController {
     private NewsDAO newsDAO;
     private AdminController adminController;
     private MarineSpeciesDAO marineSpeciesDAO = new MarineSpeciesDAO();
-    private ObservableList<MarineSpecies> speciesList;
 
     private double xOffset = 0;
     private double yOffset = 0;
-
-    private List<News> newsCache;
-    private Map<Integer, Image> imageCache = new HashMap<>();
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
@@ -166,8 +159,6 @@ public class MainController {
 
             // Refresh challenges setelah user diset
             refreshChallenges();
-            // Load news after login
-            loadNewsIfNeeded();
         }
         updateUsernameLabel();
     }
@@ -177,8 +168,6 @@ public class MainController {
         updateUsernameLabel();
         if (admin != null) {
             refreshChallenges();  // Refresh challenges setelah admin login
-            // Load news after admin login
-            loadNewsIfNeeded();
         }
     }
 
@@ -212,35 +201,51 @@ public class MainController {
     public void initialize() {
         System.out.println("Initializing MainController...");
         
-        // Initialize only what's needed immediately
-        setupTabListeners();
-        setupSearchListeners();
-        setupButtonStyles();
-    }
+        try {
+            ObservableList<MarineSpecies> speciesList = marineSpeciesDAO.getAllMarineSpecies();
+            System.out.println("Loaded species count: " + speciesList.size());
 
-    private void setupTabListeners() {
-        tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
-            if (newTab != null) {
-                switch(newTab.getText()) {
-                    case "MARINE SPECIES":
-                        refreshSpeciesView();
-                        break;
-                    case "NEWS":
-                        loadNewsIfNeeded();
-                        break;
+            if (speciesFlowPane != null) {
+                speciesFlowPane.getChildren().clear();
+
+                // Create cards for each species
+                for (MarineSpecies species : speciesList) {
+                    VBox card = createSpeciesCard(species);
+                    if (card != null) {
+                        speciesFlowPane.getChildren().add(card);
+                        System.out.println("Added card for species: " + species.getName());
+                    }
                 }
+            } else {
+                System.err.println("Error: speciesFlowPane is null!");
+            }
+        } catch (Exception e) {
+            System.err.println("Error initializing marine species view: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Add tab change listener untuk refresh
+        tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            if (newTab.getText().equals("MARINE SPECIES")) {
+                refreshSpeciesView();
             }
         });
-    }
 
-    private void loadNewsIfNeeded() {
-        if (newsCache == null) {
-            if (newsDAO == null) {
-                newsDAO = new NewsDAO();
-            }
-            newsCache = newsDAO.getAllNews();
-            displayNews(newsCache);
-        }
+        // Add search listener
+        speciesSearchField.setPromptText("Cari nama species atau nama latin...");
+        speciesSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            clearSearchButton.setVisible(!newValue.isEmpty());
+            filterSpecies(newValue);
+        });
+
+        setupButtonHoverEffect(newsAdminButton, "#2196F3", "#21CBF3");
+        setupButtonHoverEffect(marineSpeciesAdminButton, "#4CAF50", "#8BC34A");
+        setupButtonHoverEffect(recommendationAdminButton, "#FF9800", "#FFC107");
+        setupButtonHoverEffect(challengeAdminButton, "#F44336", "#E57373");
+        setupButtonHoverEffect(userAdminButton, "#9C27B0", "#BA68C8");
+
+        newsDAO = new NewsDAO();
+        loadNews();
     }
 
     private void filterSpecies(String newValue) {
@@ -248,10 +253,7 @@ public class MainController {
         ObservableList<MarineSpecies> filteredSpecies;
 
         if (newValue == null || newValue.isEmpty()) {
-            if (speciesList == null) {
-                speciesList = marineSpeciesDAO.getAllMarineSpecies();
-            }
-            filteredSpecies = speciesList;
+            filteredSpecies = marineSpeciesDAO.getAllMarineSpecies();
         } else {
             filteredSpecies = marineSpeciesDAO.searchSpecies(newValue);
         }
@@ -289,9 +291,7 @@ public class MainController {
     void refreshSpeciesView() {
         if (speciesFlowPane != null) {
             speciesFlowPane.getChildren().clear();
-            if (speciesList == null) {
-                speciesList = marineSpeciesDAO.getAllMarineSpecies();
-            }
+            ObservableList<MarineSpecies> speciesList = marineSpeciesDAO.getAllMarineSpecies();
 
             for (MarineSpecies species : speciesList) {
                 VBox card = createSpeciesCard(species);
@@ -325,22 +325,16 @@ public class MainController {
         imageView.setPreserveRatio(true);
 
         try {
-            Image cachedImage = imageCache.get(species.getId());
-            if (cachedImage != null) {
-                imageView.setImage(cachedImage);
-            } else {
-                byte[] imageData = marineSpeciesDAO.getSpeciesImage(species.getId());
-                if (imageData != null && imageData.length > 0) {
-                    Image image = new Image(new ByteArrayInputStream(imageData));
-                    imageCache.put(species.getId(), image);
-                    imageView.setImage(image);
-                } else {
-                    loadDefaultImage(imageView);
-                }
-            }
+            Image image = new Image(getClass().getResourceAsStream(species.getImageUrl()));
+            imageView.setImage(image);
         } catch (Exception e) {
-            System.err.println("Error loading image for species " + species.getName() + ": " + e.getMessage());
-            loadDefaultImage(imageView);
+            System.err.println("Error loading image: " + species.getImageUrl());
+            try {
+                Image defaultImage = new Image(getClass().getResourceAsStream("/images/default_species.jpg"));
+                imageView.setImage(defaultImage);
+            } catch (Exception ex) {
+                System.err.println("Error loading default image");
+            }
         }
 
         imageContainer.getChildren().add(imageView);
@@ -376,15 +370,6 @@ public class MainController {
         card.setOnMouseClicked(e -> showMarineSpeciesDetails(species));
 
         return card;
-    }
-
-    private void loadDefaultImage(ImageView imageView) {
-        try {
-            Image defaultImage = new Image(getClass().getResourceAsStream("/images/default_species.jpg"));
-            imageView.setImage(defaultImage);
-        } catch (Exception ex) {
-            System.err.println("Error loading default image");
-        }
     }
 
     private void showMarineSpeciesDetails(MarineSpecies species) {
@@ -1311,10 +1296,14 @@ public class MainController {
     }
 
     public void handleNewsUpdated() {
+        // Refresh news content
         Platform.runLater(() -> {
             try {
-                newsCache = newsDAO.getAllNews();
-                displayNews(newsCache);
+                // Refresh news content in the main view
+                NewsDAO newsDAO = new NewsDAO();
+                List<News> latestNews = newsDAO.getAllNews();
+                // Update your UI components here with the latest news
+                refreshNewsContent(latestNews);
             } catch (Exception e) {
                 e.printStackTrace();
                 AlertUtils.showError("Error", "Gagal memperbarui tampilan berita: " + e.getMessage());
@@ -1551,23 +1540,5 @@ public class MainController {
         if (timestamp == null) return "";
         LocalDate date = timestamp.toLocalDateTime().toLocalDate();
         return date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
-    }
-
-    private void setupSearchListeners() {
-        // Add search listener
-        speciesSearchField.setPromptText("Cari nama species atau nama latin...");
-        speciesSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            clearSearchButton.setVisible(!newValue.isEmpty());
-            filterSpecies(newValue);
-        });
-    }
-
-    private void setupButtonStyles() {
-        // Setup button hover effects
-        setupButtonHoverEffect(newsAdminButton, "#2196F3", "#21CBF3");
-        setupButtonHoverEffect(marineSpeciesAdminButton, "#4CAF50", "#8BC34A");
-        setupButtonHoverEffect(recommendationAdminButton, "#FF9800", "#FFC107");
-        setupButtonHoverEffect(challengeAdminButton, "#F44336", "#E57373");
-        setupButtonHoverEffect(userAdminButton, "#9C27B0", "#BA68C8");
     }
 }
