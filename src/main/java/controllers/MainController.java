@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import dao.MarineSpeciesDAO;
 import dao.NewsDAO;
@@ -37,15 +38,15 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.scene.Cursor;
 import models.*;
 import utils.AlertUtils;
 import utils.ChallengeDetailsFetcher;
 import utils.DatabaseHelper;
 import utils.LeaderboardFetcher;
-import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
+import javafx.animation.FadeTransition;
+import javafx.scene.input.KeyCode;
 
 public class MainController {
 
@@ -147,6 +148,8 @@ public class MainController {
     private Button discussionButton111;
     @FXML
     private Button clearSearchButton;
+    @FXML
+    private ScrollPane recommendationScrollPane;
 
     private User currentUser;
     private Admin currentAdmin;
@@ -165,6 +168,12 @@ public class MainController {
     private Map<Integer, Image> imageCache = new HashMap<>();
 
     private Timeline leaderboardRefreshTimeline;
+
+    private RecommendationDAO recommendationDAO;
+    @FXML
+    private VBox recommendationContainer;
+    @FXML
+    private TextField recommendationSearchField;
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
@@ -219,29 +228,83 @@ public class MainController {
 
     @FXML
     public void initialize() {
-        System.out.println("Initializing MainController...");
-        
-        // Initialize only what's needed immediately
-        setupTabListeners();
-        setupSearchListeners();
-        setupButtonStyles();
-        setupLeaderboardAutoRefresh();
-        updateLeaderboard(); // Panggil updateLeaderboard saat aplikasi dimulai
+        System.out.print("Initializing MainController...\n");
+
+        // Initialize containers
+        if (challengeListContainer == null) {
+            System.err.println("Warning: challengeListContainer is null!");
+        }
+
+        // Load initial data
+        try {
+            // Initialize DAOs
+            recommendationDAO = new RecommendationDAO();
+            newsDAO = new NewsDAO();
+
+            // Load recommendations first
+            refreshRecommendations();
+
+            // Load other data
+            updateLeaderboard();
+            loadNewsFromDatabase();
+            loadAllNewsToView();
+            loadLeaderboard();
+            refreshChallenges();
+        } catch (Exception e) {
+            System.err.println("Error loading initial data: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Add search field listener
+        if (recommendationSearchField != null) {
+            recommendationSearchField.setOnKeyPressed(event -> {
+                if (event.getCode() == KeyCode.ENTER) {
+                    searchRecommendations();
+                }
+            });
+        }
+
+        // Set custom scrollbar style for recommendation container
+        if (recommendationScrollPane != null) {
+            recommendationScrollPane.setStyle(
+                "-fx-background: transparent; " +
+                "-fx-background-color: transparent;"
+            );
+            
+            Node viewport = recommendationScrollPane.lookup(".viewport");
+            if (viewport != null) {
+                viewport.setStyle("-fx-background-color: transparent;");
+            }
+        }
     }
 
-    private void setupTabListeners() {
-        tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
-            if (newTab != null) {
-                switch(newTab.getText()) {
-                    case "MARINE SPECIES":
-                        refreshSpeciesView();
-                        break;
-                    case "NEWS":
-                        loadNewsIfNeeded();
-                        break;
-                }
-            }
-        });
+    private void setupNewsClickHandlers() {
+        // Setup news click handlers
+        if (newsBox1 != null) {
+            newsBox1.setOnMouseClicked(event -> {
+                System.out.println("Clicked newsBox1: Hiu");
+                showNewsDetails("Waktu Hampir Habis untuk Selamatkan Hiu");
+            });
+        }
+        
+        if (newsBox2 != null) {
+            newsBox2.setOnMouseClicked(event -> {
+                System.out.println("Clicked newsBox2: Singa Laut");
+                showNewsDetails("Penembak Singa Laut Diburu, yang Menemukan Dihadiahi Rp312 Juta");
+            });
+        }
+        
+        if (newsBox3 != null) {
+            newsBox3.setOnMouseClicked(event -> {
+                System.out.println("Clicked newsBox3: Terumbu Karang");
+                showNewsDetails("Pemutihan Terumbu Karang Akibat Panas Laut yang Mematikan");
+            });
+        }
+
+        // Add style classes if elements exist
+        if (newsBox1 != null) newsBox1.getStyleClass().add("news-card");
+        if (newsBox2 != null) newsBox2.getStyleClass().add("news-card");
+        if (newsBox3 != null) newsBox3.getStyleClass().add("news-card");
     }
 
     private void loadNewsIfNeeded() {
@@ -519,34 +582,7 @@ public class MainController {
         });
     }
 
-    @FXML
-    private void handleDiscussionButtonClick(ActionEvent event) {
-        Button sourceButton = (Button) event.getSource();
-        String locationName;
-
-        // Tentukan lokasi berdasarkan fx:id button
-        switch (sourceButton.getId()) {
-            case "discussionButton":
-            case "discussionButton111":
-                locationName = "Pantai Pangandaran";
-                break;
-            case "discussionButton1":
-            case "discussionButton11":
-            case "discussionButton12":
-                locationName = "Pantai Anyer";
-                break;
-            case "discussionButton2":
-            case "discussionButton21":
-            case "discussionButton22":
-                locationName = "Pantai Carita";
-                break;
-            default:
-                locationName = "Unknown Location";
-                break;
-        }
-
-        openDiscussion(locationName);
-    }
+    
 
     private void displayNews() {
         News news1 = newsDAO.getNewsById(1);
@@ -1334,53 +1370,482 @@ public class MainController {
     }
 
     public void refreshRecommendations() {
+        try {
+            if (recommendationContainer == null) {
+                System.err.println("Warning: recommendationContainer is null!");
+                return;
+            }
+
+            List<Recommendation> recommendations = recommendationDAO.getAllRecommendations();
+            
+            // Clear existing content
+            recommendationContainer.getChildren().clear();
+            
+            // Create HBox for each row (2 recommendations per row)
+            HBox currentRow = null;
+            
+            for (int i = 0; i < recommendations.size(); i++) {
+                if (i % 2 == 0) {
+                    // Start new row
+                    currentRow = new HBox(40); // Increased spacing between cards
+                    currentRow.setAlignment(Pos.CENTER);
+                    currentRow.setPadding(new Insets(10, 20, 10, 20)); // Add padding around rows
+                    recommendationContainer.getChildren().add(currentRow);
+                }
+                
+                VBox post = createRecommendationPost(recommendations.get(i));
+                if (currentRow != null) {
+                    currentRow.getChildren().add(post);
+                }
+            }
+            
+            // If the last row has only one card, add an empty spacer
+            if (currentRow != null && currentRow.getChildren().size() == 1) {
+                Region spacer = new Region();
+                spacer.setPrefWidth(360); // Match new card width
+                currentRow.getChildren().add(spacer);
+            }
+            
+            // Add padding at the bottom of the container
+            recommendationContainer.setPadding(new Insets(10, 0, 20, 0));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertUtils.showError("Error", "Failed to refresh recommendations: " + e.getMessage());
+        }
     }
 
-    @FXML
-    private void openDiscussion(String locationName) {
+    private VBox createRecommendationPost(Recommendation recommendation) {
         try {
-            System.out.println("Opening discussion for: " + locationName);
+            VBox post = new VBox();
+            post.setSpacing(10); // Consistent spacing
+            post.setStyle("-fx-background-color: rgba(255, 255, 255, 0.7); " + 
+                         "-fx-padding: 15; " + 
+                         "-fx-background-radius: 15; " +
+                         "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 4);");
+            post.setPrefWidth(360); // Even smaller width for better fit
+            post.setMaxWidth(360);
+            post.setMinHeight(480); // Adjusted height
+            post.setAlignment(Pos.TOP_CENTER); // Center align all content
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/recomDiscuss.fxml"));
+            // Title with container
+            VBox titleContainer = new VBox(); // Changed to VBox for better centering
+            titleContainer.setAlignment(Pos.CENTER);
+            titleContainer.setPadding(new Insets(0, 0, 5, 0));
+            
+            Label titleLabel = new Label(recommendation.getLocationName());
+            titleLabel.setStyle("-fx-font-size: 18px; " +
+                             "-fx-font-weight: bold; " +
+                              "-fx-text-fill: #1a2980; " +
+                              "-fx-text-alignment: center;");
+            titleLabel.setWrapText(true);
+            titleLabel.setMaxWidth(320);
+            titleContainer.getChildren().add(titleLabel);
+
+            // Image container
+            VBox imageContainer = new VBox();
+            imageContainer.setStyle("-fx-background-color: rgba(248, 249, 250, 0.5); " +
+                                  "-fx-padding: 8; " +
+                                  "-fx-background-radius: 12; " +
+                                  "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 4, 0, 0, 2);");
+            imageContainer.setAlignment(Pos.CENTER);
+            
+            ImageView imageView = new ImageView();
+            imageView.setFitWidth(320);
+            imageView.setFitHeight(200);
+            imageView.setPreserveRatio(true);
+
+            // Load image
+            byte[] imageData = recommendation.getImageData();
+            if (imageData != null && imageData.length > 0) {
+                try {
+                    Image image = new Image(new ByteArrayInputStream(imageData));
+                    if (!image.isError()) {
+                        imageView.setImage(image);
+                    } else {
+                        loadDefaultImage(imageView);
+                    }
+                } catch (Exception e) {
+                    loadDefaultImage(imageView);
+                }
+            } else {
+                loadDefaultImage(imageView);
+            }
+            
+            imageContainer.getChildren().add(imageView);
+
+            // Description container
+            VBox descContainer = new VBox();
+            descContainer.setStyle("-fx-background-color: rgba(248, 249, 250, 0.5); " +
+                                 "-fx-padding: 10; " +
+                                 "-fx-background-radius: 12;");
+            descContainer.setAlignment(Pos.CENTER);
+            
+            TextArea descArea = new TextArea(recommendation.getDescription());
+            descArea.setWrapText(true);
+            descArea.setEditable(false);
+            descArea.setPrefRowCount(3);
+            descArea.setPrefWidth(300);
+            descArea.setStyle("-fx-background-color: transparent; " +
+                            "-fx-text-fill: #2c3e50; " +
+                            "-fx-font-size: 13px; " +
+                            "-fx-padding: 0; " +
+                            "-fx-background-insets: 0; " +
+                            "-fx-focus-color: transparent; " +
+                            "-fx-faint-focus-color: transparent;");
+            descContainer.getChildren().add(descArea);
+
+            // Rating Box
+            HBox ratingBox = createRatingBox(recommendation);
+            ratingBox.setStyle("-fx-padding: 8; " +
+                             "-fx-background-color: rgba(248, 249, 250, 0.5); " +
+                             "-fx-background-radius: 12;");
+            ratingBox.setAlignment(Pos.CENTER); // Center align rating box
+
+            // Button container
+            HBox buttonContainer = new HBox();
+            buttonContainer.setAlignment(Pos.CENTER);
+            buttonContainer.setPadding(new Insets(5, 0, 0, 0));
+
+            Button discussButton = new Button("Diskusi Rekomendasi");
+            discussButton.setStyle("-fx-background-color: rgba(26, 41, 128, 0.8); " +
+                                 "-fx-text-fill: white; " +
+                                 "-fx-font-size: 13px; " +
+                                 "-fx-padding: 8 20; " +
+                                 "-fx-background-radius: 20; " +
+                                 "-fx-cursor: hand; " +
+                                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);");
+            
+            // Hover effects
+            discussButton.setOnMouseEntered(e -> {
+                discussButton.setStyle(discussButton.getStyle()
+                    .replace("rgba(26, 41, 128, 0.8)", "rgba(42, 60, 95, 0.9)")
+                    .replace("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1)",
+                            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2)"));
+            });
+            discussButton.setOnMouseExited(e -> {
+                discussButton.setStyle(discussButton.getStyle()
+                    .replace("rgba(42, 60, 95, 0.9)", "rgba(26, 41, 128, 0.8)")
+                    .replace("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2)",
+                            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1)"));
+            });
+
+            discussButton.setOnAction(e -> openDiscussion(recommendation));
+            buttonContainer.getChildren().add(discussButton);
+
+            // Add all components with consistent spacing
+            post.getChildren().addAll(
+                titleContainer,
+                imageContainer,
+                descContainer,
+                ratingBox,
+                buttonContainer
+            );
+
+            // Add consistent spacing between elements
+            VBox.setMargin(imageContainer, new Insets(5, 0, 5, 0));
+            VBox.setMargin(descContainer, new Insets(5, 0, 5, 0));
+            VBox.setMargin(ratingBox, new Insets(5, 0, 5, 0));
+            VBox.setMargin(buttonContainer, new Insets(5, 0, 0, 0));
+
+            return post;
+        } catch (Exception e) {
+            System.err.println("Error creating recommendation post: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Return a simple error card
+            VBox errorCard = new VBox();
+            errorCard.setStyle("-fx-background-color: rgba(255, 235, 238, 0.7); " +
+                             "-fx-padding: 15; " +
+                             "-fx-background-radius: 12;");
+            errorCard.setAlignment(Pos.CENTER);
+            Label errorLabel = new Label("Error loading recommendation");
+            errorLabel.setStyle("-fx-text-fill: #d32f2f; -fx-font-size: 13px;");
+            errorCard.getChildren().add(errorLabel);
+            return errorCard;
+        }
+    }
+
+    private HBox createRatingBox(Recommendation recommendation) {
+        // Main container with reduced height
+        HBox ratingBox = new HBox(10); // Reduced spacing
+        ratingBox.setAlignment(Pos.CENTER);
+        ratingBox.setPrefHeight(60); // Reduced height
+        ratingBox.setStyle("-fx-background-color: rgba(26, 41, 128, 0.05); " +
+                          "-fx-padding: 8 12; " + // Reduced padding
+                          "-fx-background-radius: 10; " +
+                          "-fx-border-color: rgba(26, 41, 128, 0.1); " +
+                          "-fx-border-radius: 10; " +
+                          "-fx-border-width: 1;");
+
+        // Left section: Current Rating Display (smaller)
+        VBox ratingDisplay = new VBox(3); // Reduced spacing
+        ratingDisplay.setAlignment(Pos.CENTER);
+        ratingDisplay.setPrefWidth(80); // Reduced width
+        ratingDisplay.setStyle("-fx-background-color: rgba(255, 255, 255, 0.7); " +
+                             "-fx-padding: 5; " + // Reduced padding
+                             "-fx-background-radius: 8;");
+        
+        Label ratingLabel = new Label("Rating");
+        ratingLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #666666; -fx-font-weight: bold;");
+        
+        Label ratingValueLabel = new Label(String.format("%.1f", recommendation.getRating()));
+        ratingValueLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1a2980;");
+        
+        ratingDisplay.getChildren().addAll(ratingLabel, ratingValueLabel);
+
+        // Center section: Stars display (adjusted size)
+        HBox starsBox = new HBox(2); // Reduced spacing
+        starsBox.setAlignment(Pos.CENTER);
+        starsBox.setPrefWidth(100); // Reduced width
+        starsBox.setStyle("-fx-background-color: rgba(255, 255, 255, 0.7); " +
+                         "-fx-padding: 5; " + // Reduced padding
+                         "-fx-background-radius: 8;");
+        
+        for (int i = 0; i < 5; i++) {
+            Label starLabel = new Label(i < recommendation.getRating() ? "★" : "☆");
+            starLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: " + // Reduced font size
+                             (i < recommendation.getRating() ? "#FFD700" : "#CCCCCC") + ";");
+            starsBox.getChildren().add(starLabel);
+        }
+
+        // Right section: Rating Input (smaller)
+        VBox ratingInputSection = new VBox(3); // Reduced spacing
+        ratingInputSection.setAlignment(Pos.CENTER);
+        ratingInputSection.setPrefWidth(100); // Reduced width
+        ratingInputSection.setStyle("-fx-background-color: rgba(255, 255, 255, 0.7); " +
+                                  "-fx-padding: 5; " + // Reduced padding
+                                  "-fx-background-radius: 8;");
+        
+        // Rating ComboBox with adjusted styling
+        ComboBox<Integer> ratingInput = new ComboBox<>();
+        ratingInput.getItems().addAll(1, 2, 3, 4, 5);
+        ratingInput.setPromptText("Rate");
+        ratingInput.setStyle("-fx-font-size: 11px; " + // Reduced font size
+                           "-fx-background-color: white; " +
+                           "-fx-background-radius: 6; " +
+                           "-fx-border-radius: 6; " +
+                           "-fx-border-color: #1a2980; " +
+                           "-fx-border-width: 1;");
+        ratingInput.setPrefWidth(60); // Reduced width
+
+        // Submit Button (smaller)
+        Button submitButton = new Button("Rate");
+        submitButton.setStyle("-fx-background-color: #1a2980; " +
+                            "-fx-text-fill: white; " +
+                            "-fx-font-size: 11px; " + // Reduced font size
+                            "-fx-padding: 4 10; " + // Reduced padding
+                            "-fx-background-radius: 6; " +
+                            "-fx-cursor: hand; " +
+                            "-fx-font-weight: bold;");
+
+        // Hover effects for submit button
+        submitButton.setOnMouseEntered(e -> {
+            submitButton.setStyle(submitButton.getStyle()
+                .replace("#1a2980", "#2a3c5f"));
+            submitButton.setEffect(new javafx.scene.effect.DropShadow(3, Color.rgb(0, 0, 0, 0.2))); // Reduced shadow
+        });
+        submitButton.setOnMouseExited(e -> {
+            submitButton.setStyle(submitButton.getStyle()
+                .replace("#2a3c5f", "#1a2980"));
+            submitButton.setEffect(null);
+        });
+
+        // Handle user login state
+        if (currentUser != null) {
+            try {
+                // Get user's existing rating
+                int userRating = recommendationDAO.getUserRating(recommendation.getId(), currentUser.getId());
+                if (userRating > 0) {
+                    ratingInput.setValue(userRating);
+                }
+
+                // Enable rating components
+                ratingInput.setDisable(false);
+                submitButton.setDisable(false);
+
+                submitButton.setOnAction(e -> {
+                    Integer selectedRating = ratingInput.getValue();
+                    if (selectedRating != null) {
+                        try {
+                            // Update rating in database
+                            recommendationDAO.updateRating(recommendation.getId(), selectedRating, currentUser.getId());
+                            
+                            // Update average rating display
+                            double newAverage = recommendationDAO.getAverageRating(recommendation.getId());
+                            ratingValueLabel.setText(String.format("%.1f", newAverage));
+                            
+                            // Update stars display
+                            starsBox.getChildren().clear();
+                            for (int i = 0; i < 5; i++) {
+                                Label starLabel = new Label(i < newAverage ? "★" : "☆");
+                                starLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: " + // Reduced font size
+                                                 (i < newAverage ? "#FFD700" : "#CCCCCC") + ";");
+                                starsBox.getChildren().add(starLabel);
+                            }
+                            
+                            // Show success message with animation
+                            showSuccessAnimation(ratingBox);
+                            
+                        } catch (SQLException ex) {
+                            AlertUtils.showError("Error", "Gagal memberikan rating: " + ex.getMessage());
+                        }
+                    } else {
+                        AlertUtils.showError("Error", "Silakan pilih nilai rating (1-5)");
+                    }
+                });
+            } catch (SQLException e) {
+                System.err.println("Error getting user rating: " + e.getMessage());
+            }
+        } else {
+            // Disable rating for non-logged in users
+            ratingInput.setDisable(true);
+            submitButton.setDisable(true);
+            
+            // Add login prompt with icon (smaller)
+            Label loginPrompt = new Label("⚠️ Login untuk rating");
+            loginPrompt.setStyle("-fx-font-size: 10px; -fx-text-fill: #666666; -fx-font-weight: bold;");
+            ratingInputSection.getChildren().add(loginPrompt);
+        }
+
+        // Add rating input components
+        HBox inputContainer = new HBox(4); // Reduced spacing
+        inputContainer.setAlignment(Pos.CENTER);
+        inputContainer.getChildren().addAll(ratingInput, submitButton);
+        ratingInputSection.getChildren().add(0, inputContainer);
+
+        // Add all sections to rating box
+        ratingBox.getChildren().addAll(ratingDisplay, starsBox, ratingInputSection);
+
+        return ratingBox;
+    }
+
+    private void showSuccessAnimation(HBox ratingBox) {
+        // Create success label
+        Label successLabel = new Label("✓ Rating berhasil!");
+        successLabel.setStyle("-fx-font-size: 12px; " +
+                            "-fx-text-fill: #4CAF50; " +
+                            "-fx-font-weight: bold; " +
+                            "-fx-background-color: rgba(76, 175, 80, 0.1); " +
+                            "-fx-padding: 5 10; " +
+                            "-fx-background-radius: 5;");
+        
+        // Add to rating box temporarily
+        ratingBox.getChildren().add(successLabel);
+        
+        // Create fade out transition
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(2), successLabel);
+        fadeOut.setFromValue(1.0);
+        fadeOut.setToValue(0.0);
+        fadeOut.setOnFinished(e -> ratingBox.getChildren().remove(successLabel));
+        
+        // Play animation
+        fadeOut.play();
+    }
+
+    private void openDiscussion(Recommendation recommendation) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RecomDiscuss.fxml"));
             Parent root = loader.load();
 
             DiscussionController controller = loader.getController();
-            controller.setLocationInfo(locationName);
+            controller.setCurrentUser(currentUser);
+            controller.setLocationDetails(
+                recommendation.getLocationName(),
+                recommendation.getDescription(),
+                recommendation.getImageData()
+            );
 
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Diskusi " + locationName);
-            stage.setScene(new Scene(root));
-            stage.show();
+            stage.setTitle("Diskusi - " + recommendation.getLocationName());
 
+            // Set minimum size for discussion window
+            stage.setMinWidth(800);
+            stage.setMinHeight(600);
+
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
         } catch (IOException e) {
-            System.err.println("Error opening discussion window: " + e.getMessage());
             e.printStackTrace();
+            AlertUtils.showError("Error", "Gagal membuka diskusi: " + e.getMessage());
         }
     }
 
     @FXML
-    private void clearSearch() {
-        speciesSearchField.clear();
-        filterSpecies("");
-    }
-
-    public void handleNewsUpdated() {
-        Platform.runLater(() -> {
-            try {
-                newsCache = newsDAO.getAllNews();
-                displayNews(newsCache);
-            } catch (Exception e) {
-                e.printStackTrace();
-                AlertUtils.showError("Error", "Gagal memperbarui tampilan berita: " + e.getMessage());
+    private void searchRecommendations() {
+        String searchQuery = recommendationSearchField.getText().trim().toLowerCase();
+        
+        try {
+            List<Recommendation> allRecommendations = recommendationDAO.getAllRecommendations();
+            List<Recommendation> filteredRecommendations = new ArrayList<>();
+            
+            // Filter recommendations based on search query
+            for (Recommendation rec : allRecommendations) {
+                if (rec.getLocationName().toLowerCase().contains(searchQuery) ||
+                    rec.getDescription().toLowerCase().contains(searchQuery)) {
+                    filteredRecommendations.add(rec);
+                }
             }
-        });
-    }
-
-    private void refreshNewsContent(List<News> newsList) {
-        // Implement the UI update logic here
-        // This should update your news display in the main view
-        // For example, updating a ListView, GridPane, or whatever container you use to display news
+            
+            // Clear existing content
+            recommendationContainer.getChildren().clear();
+            
+            if (filteredRecommendations.isEmpty()) {
+                // Show "no results" message
+                VBox noResultsBox = new VBox();
+                noResultsBox.setAlignment(Pos.CENTER);
+                noResultsBox.setPadding(new Insets(50, 0, 0, 0));
+                
+                Label noResultsLabel = new Label("Tidak ada hasil yang ditemukan");
+                noResultsLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #666666;");
+                
+                Button clearSearchButton = new Button("Tampilkan Semua");
+                clearSearchButton.setStyle("-fx-background-color: #1a2980; " +
+                                        "-fx-text-fill: white; " +
+                                        "-fx-padding: 8 20; " +
+                                        "-fx-background-radius: 20; " +
+                                        "-fx-cursor: hand; " +
+                                        "-fx-font-size: 14px;");
+                clearSearchButton.setOnAction(e -> {
+                    recommendationSearchField.clear();
+                    refreshRecommendations();
+                });
+                
+                noResultsBox.getChildren().addAll(noResultsLabel, new Region() {{ setMinHeight(20); }}, clearSearchButton);
+                recommendationContainer.getChildren().add(noResultsBox);
+            } else {
+                // Create HBox for each row (2 recommendations per row)
+                HBox currentRow = null;
+                
+                for (int i = 0; i < filteredRecommendations.size(); i++) {
+                    if (i % 2 == 0) {
+                        // Start new row
+                        currentRow = new HBox(40);
+                        currentRow.setAlignment(Pos.CENTER);
+                        currentRow.setPadding(new Insets(10, 20, 10, 20));
+                        recommendationContainer.getChildren().add(currentRow);
+                    }
+                    
+                    VBox post = createRecommendationPost(filteredRecommendations.get(i));
+                    if (currentRow != null) {
+                        currentRow.getChildren().add(post);
+                    }
+                }
+                
+                // If the last row has only one card, add an empty spacer
+                if (currentRow != null && currentRow.getChildren().size() == 1) {
+                    Region spacer = new Region();
+                    spacer.setPrefWidth(360);
+                    currentRow.getChildren().add(spacer);
+                }
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            AlertUtils.showError("Error", "Gagal mencari rekomendasi: " + e.getMessage());
+        }
     }
 
     private void displayNews(List<News> newsList) {
@@ -1444,200 +1909,15 @@ public class MainController {
         }
     }
 
-    private StackPane createBreakingNewsCard(News news) {
-        StackPane card = new StackPane();
-        card.setPrefHeight(300);
-        card.setPrefWidth(900);
-        card.setStyle("-fx-background-color: transparent;");
-
-        // Image
-        ImageView imageView = setupNewsImage(news, 900, 300);
-        
-        // Dark overlay dengan gradien merah untuk breaking news
-        Rectangle overlay = new Rectangle(900, 300);
-        overlay.setFill(Color.rgb(255, 0, 0, 0.3));
-        
-        // Content container
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(20));
-        content.setAlignment(Pos.BOTTOM_LEFT);
-
-        // Breaking news badge
-        Label breakingBadge = new Label("BREAKING");
-        breakingBadge.setStyle(
-            "-fx-background-color: #ff3d3d;" +
-            "-fx-text-fill: white;" +
-            "-fx-font-weight: bold;" +
-            "-fx-padding: 5 10;" +
-            "-fx-background-radius: 5;"
-        );
-
-        // Title
-        Label titleLabel = new Label(news.getTitle());
-        titleLabel.setStyle(
-            "-fx-font-size: 24px;" +
-            "-fx-font-weight: bold;" +
-            "-fx-text-fill: white;"
-        );
-        titleLabel.setWrapText(true);
-        titleLabel.setMaxWidth(850);
-
-        // Description preview
-        Label descLabel = new Label(news.getDescription());
-        descLabel.setStyle(
-            "-fx-font-size: 14px;" +
-            "-fx-text-fill: white;"
-        );
-        descLabel.setWrapText(true);
-        descLabel.setMaxWidth(850);
-        descLabel.setMaxHeight(60);
-
-        content.getChildren().addAll(breakingBadge, titleLabel, descLabel);
-
-        // Add hover effect
-        card.setOnMouseEntered(e -> {
-            overlay.setFill(Color.rgb(255, 0, 0, 0.4));
-            card.setCursor(Cursor.HAND);
-        });
-        
-        card.setOnMouseExited(e -> {
-            overlay.setFill(Color.rgb(255, 0, 0, 0.3));
-            card.setCursor(Cursor.DEFAULT);
-        });
-
-        // Click event
-        card.setOnMouseClicked(e -> showNewsDetails(news));
-
-        card.getChildren().addAll(imageView, overlay, content);
-        return card;
-    }
-
     private StackPane createRegularNewsCard(News news) {
-        StackPane card = new StackPane();
-        card.setPrefHeight(200);
-        card.setPrefWidth(440);
-        card.setStyle("-fx-background-color: transparent;");
 
-        // Image
-        ImageView imageView = setupNewsImage(news, 440, 200);
-        
-        // Dark overlay
-        Rectangle overlay = new Rectangle(440, 200);
-        overlay.setFill(Color.rgb(42, 60, 95, 0.85));
-
-        // Content
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(15));
-        content.setAlignment(Pos.BOTTOM_LEFT);
-
-        // Title
-        Label titleLabel = new Label(news.getTitle());
-        titleLabel.setStyle(
-            "-fx-font-size: 16px;" +
-            "-fx-font-weight: bold;" +
-            "-fx-text-fill: white;"
-        );
-        titleLabel.setWrapText(true);
-        titleLabel.setMaxWidth(410);
-
-        // Date
-        Label dateLabel = new Label(formatNewsDate(news.getCreatedAt()));
-        dateLabel.setStyle(
-            "-fx-font-size: 12px;" +
-            "-fx-text-fill: #cccccc;"
-        );
-
-        content.getChildren().addAll(titleLabel, dateLabel);
-
-        // Hover effect
-        card.setOnMouseEntered(e -> {
-            overlay.setFill(Color.rgb(42, 60, 95, 0.75));
-            card.setCursor(Cursor.HAND);
-        });
-        
-        card.setOnMouseExited(e -> {
-            overlay.setFill(Color.rgb(42, 60, 95, 0.85));
-            card.setCursor(Cursor.DEFAULT);
-        });
-
-        // Click event
-        card.setOnMouseClicked(e -> showNewsDetails(news));
-
-        card.getChildren().addAll(imageView, overlay, content);
-        return card;
+        return null;
     }
 
-    private ImageView setupNewsImage(News news, double width, double height) {
-        ImageView imageView = new ImageView();
-        imageView.setFitWidth(width);
-        imageView.setFitHeight(height);
-        imageView.setPreserveRatio(false);
-
-        try {
-            String imageUrl = news.getImageUrl();
-            Image image;
-            
-            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
-                if (imageUrl.startsWith("http") || imageUrl.startsWith("file:")) {
-                    image = new Image(imageUrl, true);
-                } else {
-                    image = new Image(getClass().getResourceAsStream("/images/" + imageUrl));
-                }
-                
-                if (image == null || image.isError()) {
-                    image = new Image(getClass().getResourceAsStream("/images/default_news.jpg"));
-                }
-            } else {
-                image = new Image(getClass().getResourceAsStream("/images/default_news.jpg"));
-            }
-            
-            if (image != null && !image.isError()) {
-                imageView.setImage(image);
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading news image: " + e.getMessage());
-            // Fallback to default image or leave empty
-        }
-
-        return imageView;
+    private StackPane createBreakingNewsCard(News news) {
+        return null;
     }
 
-    private String formatNewsDate(java.sql.Timestamp timestamp) {
-        if (timestamp == null) return "";
-        LocalDate date = timestamp.toLocalDateTime().toLocalDate();
-        return date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
-    }
-
-    private void setupSearchListeners() {
-        // Add search listener
-        speciesSearchField.setPromptText("Cari nama species atau nama latin...");
-        speciesSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            clearSearchButton.setVisible(!newValue.isEmpty());
-            filterSpecies(newValue);
-        });
-    }
-
-    private void setupButtonStyles() {
-        // Setup button hover effects
-        setupButtonHoverEffect(newsAdminButton, "#2196F3", "#21CBF3");
-        setupButtonHoverEffect(marineSpeciesAdminButton, "#4CAF50", "#8BC34A");
-        setupButtonHoverEffect(recommendationAdminButton, "#FF9800", "#FFC107");
-        setupButtonHoverEffect(challengeAdminButton, "#F44336", "#E57373");
-        setupButtonHoverEffect(userAdminButton, "#9C27B0", "#BA68C8");
-    }
-
-    private void setupLeaderboardAutoRefresh() {
-        leaderboardRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(30), event -> {
-            Platform.runLater(this::updateLeaderboard);
-        }));
-        leaderboardRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
-        leaderboardRefreshTimeline.play();
-    }
-
-    public void dispose() {
-        if (leaderboardRefreshTimeline != null) {
-            leaderboardRefreshTimeline.stop();
-        }
-        // ... existing code ...
+    public void clearSearch(ActionEvent actionEvent) {
     }
 }
