@@ -5,10 +5,10 @@
 <?import javafx.geometry.Insets?>
 
 <ScrollPane fitToWidth="true" style="-fx-background-color: white;"
-      xmlns="http://javafx.com/javafx/17"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="controllers.UserProfileController">
-      
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.UserProfileController">
+
     <content>
         <VBox spacing="10" alignment="CENTER" prefWidth="400">
             <padding>
