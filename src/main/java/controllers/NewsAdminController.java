@@ -32,6 +32,7 @@ public class NewsAdminController {
     @FXML private TableColumn<News, Void> actionColumn;
     @FXML private Pagination pagination;
     @FXML private Button saveButton;
+    @FXML private Button closeButton;
 
     private NewsDAO newsDAO;
     private static final int ITEMS_PER_PAGE = 10;
@@ -247,5 +248,11 @@ public class NewsAdminController {
         if (selectedFile != null) {
             imageUrlField.setText(selectedFile.getAbsolutePath());
         }
+    }
+
+    @FXML
+    public void handleClose() {
+        Stage stage = (Stage) closeButton.getScene().getWindow();
+        stage.close();
     }
 }
