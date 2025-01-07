@@ -59,12 +59,12 @@ public class RecommendationController {
 
     private VBox createRecommendationCard(Recommendation recommendation) {
         System.out.println("Creating card for recommendation: " + recommendation.getLocationName());
-        
+
         // Main card container
         VBox card = new VBox(15);
         card.setStyle("-fx-background-color: white; " +
-                     "-fx-background-radius: 15; " +
-                     "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
+                "-fx-background-radius: 15; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
         card.setPadding(new Insets(15));
         card.setMaxWidth(800);
         card.setMinHeight(400);
@@ -123,17 +123,17 @@ public class RecommendationController {
             // Discussion button
             Button discussButton = new Button("Diskusi Rekomendasi");
             discussButton.setStyle("-fx-background-color: #2196F3; " +
-                                 "-fx-text-fill: white; " +
-                                 "-fx-font-size: 14px; " +
-                                 "-fx-padding: 10 20; " +
-                                 "-fx-background-radius: 20; " +
-                                 "-fx-cursor: hand;" +
-                                 "-fx-min-width: 150;"); // Set minimum width
+                    "-fx-text-fill: white; " +
+                    "-fx-font-size: 14px; " +
+                    "-fx-padding: 10 20; " +
+                    "-fx-background-radius: 20; " +
+                    "-fx-cursor: hand;" +
+                    "-fx-min-width: 150;"); // Set minimum width
             discussButton.setOnAction(e -> {
                 System.out.println("Discussion button clicked for: " + recommendation.getLocationName());
                 openDiscussion(recommendation);
             });
-            
+
             System.out.println("Created discussion button");
             buttonBox.getChildren().add(discussButton);
 
@@ -143,22 +143,22 @@ public class RecommendationController {
             bottomBox.setPadding(new Insets(10));
             bottomBox.setSpacing(20);
             bottomBox.setMinHeight(50); // Ensure minimum height
-            
+
             // Add rating box to left and button box to right
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
             bottomBox.getChildren().addAll(ratingBox, spacer, buttonBox);
-            
+
             System.out.println("Added button to bottom box");
 
             // Add all components to card with explicit spacing
             card.getChildren().addAll(
-                imageView,
-                nameLabel,
-                descLabel,
-                bottomBox
+                    imageView,
+                    nameLabel,
+                    descLabel,
+                    bottomBox
             );
-            
+
             System.out.println("Completed card creation");
 
             // Add margin between cards
@@ -182,9 +182,9 @@ public class RecommendationController {
 
             // Pass the image data directly
             controller.setLocationDetails(
-                recommendation.getLocationName(),
-                recommendation.getDescription(),
-                recommendation.getImageData()
+                    recommendation.getLocationName(),
+                    recommendation.getDescription(),
+                    recommendation.getImageData()
             );
 
             Stage stage = new Stage();

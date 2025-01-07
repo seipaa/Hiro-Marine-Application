@@ -158,6 +158,7 @@ public class MainController {
     private Map<Integer, Image> imageCache = new HashMap<>();
 
     private Timeline leaderboardRefreshTimeline;
+    private Recommendation recommendation;
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
@@ -1335,26 +1336,34 @@ public class MainController {
 
 
 
-    @FXML
-    private void openDiscussion(String locationName) {
+    private void openDiscussion(Recommendation recommendation) {
+        this.recommendation = recommendation;
         try {
-            System.out.println("Opening discussion for: " + locationName);
-
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/recomDiscuss.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RecomDiscuss.fxml"));
             Parent root = loader.load();
 
             DiscussionController controller = loader.getController();
-            controller.setLocationInfo(locationName);
+            controller.setCurrentUser(currentUser);
+            controller.setLocationDetails(
+                    recommendation.getLocationName(),
+                    recommendation.getDescription(),
+                    recommendation.getImageData()
+            );
 
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Diskusi " + locationName);
-            stage.setScene(new Scene(root));
-            stage.show();
+            stage.setTitle("Diskusi - " + recommendation.getLocationName());
 
+            // Set minimum size for discussion window
+            stage.setMinWidth(800);
+            stage.setMinHeight(600);
+
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
         } catch (IOException e) {
-            System.err.println("Error opening discussion window: " + e.getMessage());
             e.printStackTrace();
+            AlertUtils.showError("Error", "Gagal membuka diskusi: " + e.getMessage());
         }
     }
 
@@ -1648,35 +1657,7 @@ public class MainController {
         }
     }
 
-    private void openDiscussion(Recommendation recommendation) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RecomDiscuss.fxml"));
-            Parent root = loader.load();
 
-            DiscussionController controller = loader.getController();
-            controller.setCurrentUser(currentUser);
-            controller.setLocationDetails(
-                    recommendation.getLocationName(),
-                    recommendation.getDescription(),
-                    recommendation.getImageData()
-            );
-
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Diskusi - " + recommendation.getLocationName());
-
-            // Set minimum size for discussion window
-            stage.setMinWidth(800);
-            stage.setMinHeight(600);
-
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            AlertUtils.showError("Error", "Gagal membuka diskusi: " + e.getMessage());
-        }
-    }
 
     private VBox createRecommendationPost(Recommendation recommendation) {
         try {

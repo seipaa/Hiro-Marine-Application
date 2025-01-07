@@ -28,7 +28,7 @@ public class RecommendationAdminController {
     @FXML private TableColumn<Recommendation, String> imageColumn;
     @FXML private TableColumn<Recommendation, Void> actionColumn;
 
-    private MainController mainController;
+    private                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 MainController mainController;
     private File selectedImageFile;
     private ObservableList<Recommendation> recommendations;
     private RecommendationDAO recommendationDAO;
@@ -37,26 +37,26 @@ public class RecommendationAdminController {
     @FXML
     public void initialize() {
         System.out.println("Initializing RecommendationAdminController...");
-        
+
         // Initialize DAO
         recommendationDAO = new RecommendationDAO();
-        
+
         // Initialize the table columns
-        idColumn.setCellValueFactory(cellData -> 
-            new javafx.beans.property.SimpleIntegerProperty(
-                cellData.getValue().getId()).asObject());
-        
-        locationColumn.setCellValueFactory(cellData -> 
-            new javafx.beans.property.SimpleStringProperty(
-                cellData.getValue().getLocationName()));
-        
-        descriptionColumn.setCellValueFactory(cellData -> 
-            new javafx.beans.property.SimpleStringProperty(
-                cellData.getValue().getDescription()));
-        
-        imageColumn.setCellValueFactory(cellData -> 
-            new javafx.beans.property.SimpleStringProperty(
-                cellData.getValue().getImageUrl()));
+        idColumn.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleIntegerProperty(
+                        cellData.getValue().getId()).asObject());
+
+        locationColumn.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(
+                        cellData.getValue().getLocationName()));
+
+        descriptionColumn.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(
+                        cellData.getValue().getDescription()));
+
+        imageColumn.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(
+                        cellData.getValue().getImageUrl()));
 
         // Set up the action column with edit and delete buttons
         actionColumn.setCellFactory(param -> new TableCell<>() {
@@ -67,12 +67,12 @@ public class RecommendationAdminController {
             {
                 editButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
                 deleteButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
-                
+
                 editButton.setOnAction(event -> {
                     Recommendation recommendation = getTableView().getItems().get(getIndex());
                     loadRecommendationForEdit(recommendation);
                 });
-                
+
                 deleteButton.setOnAction(event -> {
                     Recommendation recommendation = getTableView().getItems().get(getIndex());
                     deleteRecommendation(recommendation);
@@ -89,7 +89,7 @@ public class RecommendationAdminController {
         // Initialize the recommendations list
         recommendations = FXCollections.observableArrayList();
         recommendationTable.setItems(recommendations);
-        
+
         // Load initial data
         refreshTable();
     }
@@ -103,19 +103,19 @@ public class RecommendationAdminController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Image File");
         fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
         );
-        
+
         selectedImageFile = fileChooser.showOpenDialog(null);
         if (selectedImageFile != null) {
             try {
                 // Read image file into byte array
                 selectedImageData = Files.readAllBytes(selectedImageFile.toPath());
-                
+
                 // Create preview from byte array
                 Image image = new Image(new ByteArrayInputStream(selectedImageData));
                 imagePreview.setImage(image);
-                
+
                 System.out.println("Selected image: " + selectedImageFile.getAbsolutePath());
             } catch (Exception e) {
                 System.err.println("Error loading image: " + e.getMessage());
@@ -138,25 +138,25 @@ public class RecommendationAdminController {
             Recommendation recommendation = new Recommendation();
             recommendation.setLocationName(locationNameField.getText());
             recommendation.setDescription(descriptionField.getText());
-            
+
             // Set image data
             if (selectedImageData != null) {
                 recommendation.setImageData(selectedImageData);
             }
-            
+
             // Save to database
             recommendationDAO.addRecommendation(recommendation);
-            
+
             // Clear fields
             clearFields();
-            
+
             // Refresh table and main view
             refreshTable();
             if (mainController != null) {
                 // Force a complete refresh of the recommendations view
                 mainController.refreshRecommendations();
             }
-            
+
             AlertUtils.showInfo("Success", "Recommendation added successfully!");
         } catch (Exception e) {
             System.err.println("Error adding recommendation: " + e.getMessage());
@@ -193,7 +193,7 @@ public class RecommendationAdminController {
     private void loadRecommendationForEdit(Recommendation recommendation) {
         locationNameField.setText(recommendation.getLocationName());
         descriptionField.setText(recommendation.getDescription());
-        
+
         // Load image preview if available
         byte[] imageData = recommendation.getImageData();
         if (imageData != null) {
@@ -220,15 +220,15 @@ public class RecommendationAdminController {
             try {
                 // Delete from database
                 recommendationDAO.deleteRecommendation(recommendation);
-                
+
                 // Remove from table
                 recommendations.remove(recommendation);
-                
+
                 // Refresh main view
                 if (mainController != null) {
                     mainController.refreshRecommendations();
                 }
-                
+
                 AlertUtils.showInfo("Success", "Recommendation deleted successfully!");
             } catch (Exception e) {
                 System.err.println("Error deleting recommendation: " + e.getMessage());

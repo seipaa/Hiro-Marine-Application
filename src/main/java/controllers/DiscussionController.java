@@ -173,13 +173,13 @@ public class DiscussionController {
             }
 
             RecomDiscuss discussion = new RecomDiscuss(
-                0, // ID will be set by database
-                currentUser.getId(),
-                currentUser.getName(),
-                currentLocationName,
-                description,
-                imageData,
-                LocalDateTime.now()
+                    0, // ID will be set by database
+                    currentUser.getId(),
+                    currentUser.getName(),
+                    currentLocationName,
+                    description,
+                    imageData,
+                    LocalDateTime.now()
             );
 
             discussionDAO.addDiscussion(discussion);
@@ -200,8 +200,5 @@ public class DiscussionController {
 
     private String formatTimestamp(LocalDateTime timestamp) {
         return timestamp.format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
-    }
-
-    public void setLocationInfo(String locationName) {
     }
 }
