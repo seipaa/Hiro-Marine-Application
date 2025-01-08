@@ -1,62 +1,218 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" style="-fx-background-color: white;"
-            xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="controllers.UserProfileController">
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="600" prefWidth="400" style="-fx-background-color: #051C2C;" styleClass="custom-scroll-pane" vbarPolicy="ALWAYS" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.UserProfileController">
+
+    <style>
+        /* ScrollPane Styles */
+        .custom-scroll-pane {
+        -fx-background-color: transparent;
+        -fx-padding: 0;
+        }
+
+        .custom-scroll-pane > .viewport {
+        -fx-background-color: transparent;
+        }
+
+        .custom-scroll-pane .scroll-bar:vertical {
+        -fx-background-color: transparent;
+        -fx-padding: 0 2;
+        }
+
+        .custom-scroll-pane .scroll-bar:vertical .track {
+        -fx-background-color: rgba(10, 46, 77, 0.6);
+        -fx-background-radius: 10;
+        }
+
+        .custom-scroll-pane .scroll-bar:vertical .thumb {
+        -fx-background-color: #1565C0;
+        -fx-background-radius: 10;
+        }
+
+        .custom-scroll-pane .scroll-bar:vertical .thumb:hover {
+        -fx-background-color: #1976D2;
+        }
+
+        .custom-scroll-pane .scroll-bar:vertical .thumb:pressed {
+        -fx-background-color: #2196F3;
+        }
+
+        .custom-scroll-pane .scroll-bar:vertical .increment-button,
+        .custom-scroll-pane .scroll-bar:vertical .decrement-button {
+        -fx-padding: 0;
+        -fx-background-color: transparent;
+        }
+
+        .custom-scroll-pane .scroll-bar:vertical .increment-arrow,
+        .custom-scroll-pane .scroll-bar:vertical .decrement-arrow {
+        -fx-padding: 0;
+        -fx-background-color: transparent;
+        }
+
+        /* Tab Pane Styles */
+        .tab-pane .tab-header-area .tab-header-background {
+        -fx-background-color: #0A2E4D;
+        -fx-background-radius: 15 15 0 0;
+        }
+
+        .tab-pane .tab {
+        -fx-background-color: #1565C0;
+        -fx-background-radius: 15 15 0 0;
+        -fx-padding: 10 20;
+        }
+
+        .tab-pane .tab:selected {
+        -fx-background-color: #2196F3;
+        }
+
+        .tab-pane .tab-label {
+        -fx-text-fill: #90CAF9;
+        -fx-font-size: 14px;
+        -fx-font-weight: bold;
+        }
+
+        .tab-pane .tab:selected .tab-label {
+        -fx-text-fill: #E3F2FD;
+        }
+
+        /* Form Field Styles */
+        .field-label {
+        -fx-text-fill: #90CAF9;
+        -fx-font-weight: bold;
+        -fx-font-size: 14px;
+        }
+
+        .text-field, .text-area, .combo-box {
+        -fx-background-color: rgba(13, 71, 161, 0.6);
+        -fx-border-color: #1E88E5;
+        -fx-border-width: 0 0 2 0;
+        -fx-background-radius: 8;
+        -fx-padding: 8;
+        -fx-text-fill: #E3F2FD;
+        }
+
+        .text-field:focused, .text-area:focused, .combo-box:focused {
+        -fx-background-color: rgba(21, 101, 192, 0.6);
+        -fx-border-color: #42A5F5;
+        -fx-effect: dropshadow(gaussian, #1976D2, 4, 0, 0, 0);
+        }
+
+        .text-area .content {
+        -fx-background-color: rgba(13, 71, 161, 0.6);
+        }
+
+        .combo-box .list-cell {
+        -fx-text-fill: #E3F2FD;
+        }
+
+        .combo-box-popup .list-view {
+        -fx-background-color: #0D47A1;
+        }
+
+        .combo-box-popup .list-cell:hover {
+        -fx-background-color: #1565C0;
+        }
+
+        /* Button Styles */
+        .save-button {
+        -fx-background-color: linear-gradient(to right, #2196F3, #42A5F5);
+        -fx-text-fill: white;
+        -fx-font-weight: bold;
+        -fx-background-radius: 25;
+        -fx-padding: 12 30;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 2);
+        -fx-cursor: hand;
+        }
+
+        .save-button:hover {
+        -fx-background-color: linear-gradient(to right, #1976D2, #2196F3);
+        }
+
+        .logout-button {
+        -fx-background-color: linear-gradient(to right, #D32F2F, #EF5350);
+        -fx-text-fill: white;
+        -fx-font-weight: bold;
+        -fx-background-radius: 25;
+        -fx-padding: 12 30;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 2);
+        -fx-cursor: hand;
+        }
+
+        .logout-button:hover {
+        -fx-background-color: linear-gradient(to right, #C62828, #D32F2F);
+        }
+    </style>
 
     <content>
-        <VBox spacing="10" alignment="CENTER" prefWidth="400">
+        <VBox alignment="CENTER" prefWidth="384.0" spacing="15" style="-fx-background-color: linear-gradient(to bottom right, #051C2C, #0A2E4D);">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="20"/>
+                <Insets bottom="25" left="25" right="25" top="25" />
             </padding>
 
-            <Label text="User Profile" style="-fx-font-size: 24px; -fx-font-weight: bold"/>
+            <!-- Profile Header Section -->
+            <VBox alignment="CENTER" style="-fx-background-color: linear-gradient(to bottom right, #1565C0, #0D47A1);                           -fx-background-radius: 15;                           -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 2);                           -fx-padding: 20;">
 
-            <Label fx:id="usernameLabel" style="-fx-font-size: 16px; -fx-font-weight: bold"/>
-            <Label fx:id="totalPointsLabel" style="-fx-font-size: 14px; -fx-text-fill: #2196F3;"/>
-            <Label fx:id="joinDateLabel" style="-fx-font-size: 12px; -fx-text-fill: #757575;"/>
+                <Label style="-fx-font-size: 32px;                                -fx-font-weight: bold;                                -fx-text-fill: #E3F2FD;                                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);" text="User Profile" />
 
-            <TabPane style="-fx-padding: 10 0;">
-                <Tab text="Profile" closable="false">
-                    <VBox spacing="5">
-                        <Label text="Nama Panggilan:"/>
-                        <TextField fx:id="nicknameField"/>
+                <Label fx:id="usernameLabel" style="-fx-font-size: 20px;                                -fx-font-weight: bold;                                -fx-text-fill: #90CAF9;                                -fx-padding: 5 0;" />
 
-                        <Label text="Jenis Kelamin:"/>
-                        <ComboBox fx:id="genderComboBox" prefWidth="150"/>
+                <Label fx:id="totalPointsLabel" style="-fx-font-size: 18px;                                -fx-text-fill: #64B5F6;                                -fx-padding: 3 0;" />
 
-                        <Label text="Usia:"/>
-                        <TextField fx:id="ageField"/>
+                <Label fx:id="joinDateLabel" style="-fx-font-size: 16px;                                -fx-text-fill: #42A5F5;" />
+            </VBox>
 
-                        <Label text="Email:"/>
-                        <TextField fx:id="emailField"/>
+            <TabPane style="-fx-background-color: transparent;">
+                <tabs>
+                    <Tab closable="false" text="Profile">
+                        <content>
+                            <VBox spacing="12" style="-fx-background-color: linear-gradient(to bottom right, #0A2E4D, #0D47A1);                                          -fx-padding: 25;                                          -fx-background-radius: 0 0 15 15;                                          -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 2);">
 
-                        <Label text="Instagram:"/>
-                        <TextField fx:id="instagramField"/>
+                                <Label styleClass="field-label" text="Nama Panggilan:" textFill="WHITE" />
+                                <TextField fx:id="nicknameField" />
 
-                        <Label text="Twitter:"/>
-                        <TextField fx:id="twitterField"/>
+                                <Label styleClass="field-label" text="Jenis Kelamin:" textFill="WHITE" />
+                                <ComboBox fx:id="genderComboBox" prefWidth="150" />
 
-                        <Label text="Bio:"/>
-                        <TextArea fx:id="bioField" prefRowCount="3"/>
+                                <Label styleClass="field-label" text="Usia:" textFill="WHITE" />
+                                <TextField fx:id="ageField" />
 
-                        <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10 0;">
-                            <Button text="Save Changes" onAction="#saveChanges"
-                                    style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
-                            <Button text="Logout" onAction="#logout"
-                                    style="-fx-background-color: #f44336; -fx-text-fill: white;"/>
-                        </HBox>
-                    </VBox>
-                </Tab>
+                                <Label styleClass="field-label" text="Email:" textFill="WHITE" />
+                                <TextField fx:id="emailField" />
 
-                <Tab text="Completed Challenges" closable="false">
-                    <VBox fx:id="completedChallengesContainer" spacing="10" style="-fx-padding: 10;"/>
-                </Tab>
+                                <Label styleClass="field-label" text="Instagram:" textFill="WHITE" />
+                                <TextField fx:id="instagramField" prefWidth="283.0" />
+
+                                <Label styleClass="field-label" text="Twitter:" textFill="WHITE" />
+                                <TextField fx:id="twitterField" />
+
+                                <Label styleClass="field-label" text="Bio:" textFill="WHITE" />
+                                <TextArea fx:id="bioField" prefRowCount="3" wrapText="true" />
+
+                                <HBox alignment="CENTER" spacing="15" style="-fx-padding: 15 0;">
+                                    <Button onAction="#saveChanges" styleClass="save-button" text="Save Changes" />
+                                    <Button onAction="#logout" styleClass="logout-button" text="Logout" />
+                                </HBox>
+                            </VBox>
+                        </content>
+                    </Tab>
+
+                    <Tab closable="false" text="Completed Challenges">
+                        <content>
+                            <VBox fx:id="completedChallengesContainer" spacing="12" style="-fx-background-color: linear-gradient(to bottom right, #0A2E4D, #0D47A1);                                          -fx-padding: 25;                                          -fx-background-radius: 0 0 15 15;                                          -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 2);" />
+                        </content>
+                    </Tab>
+                </tabs>
             </TabPane>
         </VBox>
     </content>
