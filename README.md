@@ -1,6 +1,6 @@
 # Hiro's Marine — SEA EDUCATION
 
-> **Aplikasi desktop edukasi dan konservasi ekosistem laut berbasis JavaFX, dirancang untuk memberdayakan masyarakat menjadi "Hiro" — pahlawan bagi kelestarian lautan.**
+> **Aplikasi desktop edukasi dan konservasi ekosistem laut berbasis JavaFX, dirancang untuk memberdayakan masyarakat menjadi "Hiro" pahlawan bagi kelestarian lautan.**
 
 ---
 
@@ -24,7 +24,7 @@
 
 **Hiro's Marine** adalah aplikasi desktop edukasi lingkungan laut yang dibangun menggunakan **JavaFX** dan **Spring Boot**. Aplikasi ini menggabungkan konten edukasi kelautan dengan sistem gamifikasi (tantangan & poin) untuk mendorong masyarakat berpartisipasi aktif dalam pelestarian ekosistem laut Indonesia.
 
-Nama "Hiro" berasal dari semangat menjadi *hero* (pahlawan) bagi lautan — mengajak setiap pengguna untuk tidak hanya belajar tentang laut, tetapi juga bertindak nyata.
+Nama "Hiro" berasal dari semangat menjadi *hero* (pahlawan) bagi lautan yang mengajak setiap pengguna untuk tidak hanya belajar tentang laut, tetapi juga bertindak nyata.
 
 ---
 
@@ -57,8 +57,6 @@ Nama "Hiro" berasal dari semangat menjadi *hero* (pahlawan) bagi lautan — meng
 
 ## Tampilan Antarmuka
 
-> **Catatan:** Silakan ganti placeholder di bawah ini dengan screenshot aktual setelah menjalankan aplikasi.
-
 ### 1. Halaman Login
 
 Tampilan split layout: panel kiri berisi form login (username, password, tombol Masuk, dan link ke Register), panel kanan berisi gambar laut yang imersif. Warna utama biru `#007bff` dengan efek drop shadow pada tombol.
@@ -71,10 +69,6 @@ Tampilan split layout: panel kiri berisi form login (username, password, tombol 
 Belum Punya Akun? [ Daftar di sini ]
                           | [  Gambar Laut  ]
 ```
-
-> 📸 _Screenshot: `docs/screenshots/login.png`_
-
----
 
 ### 2. Halaman Registrasi
 
@@ -91,10 +85,6 @@ Tampilan full-screen biru dengan layout vertikal center: logo, judul "Daftar Aku
    Sudah punya akun? [ Masuk di sini ]
 ```
 
-> 📸 _Screenshot: `docs/screenshots/register.png`_
-
----
-
 ### 3. Dashboard Utama — Tab NEWS
 
 Background laut dengan overlay gelap navy. Header "HIRO'S MARINE" besar di atas, ikon profil & username di pojok kanan atas. TabPane dengan 5 tab:
@@ -104,15 +94,11 @@ Tab **NEWS** menampilkan daftar kartu berita bergulir (scroll), masing-masing de
 - "Pemutihan Terumbu Karang Akibat Panas Laut" (gambar mangrove)
 - "Penembak Singa Laut Diburu, yang Menemukan Dihadiahi Rp312 Juta" (gambar singa laut)
 
-> 📸 _Screenshot: `docs/screenshots/main_news.png`_
-
 ---
 
 ### 4. Dashboard Utama — Tab MARINE SPECIES
 
 Menampilkan tombol-tombol "Show Marine Species" yang ketika diklik akan menampilkan info spesies laut dari database.
-
-> 📸 _Screenshot: `docs/screenshots/main_marinespecies.png`_
 
 ---
 
@@ -122,8 +108,6 @@ Dua area scroll:
 - **Atas (horizontal scroll):** Kartu-kartu rekomendasi destinasi wisata dengan gambar dan tombol "Diskusi Rekomendasi" — Pantai Pangandaran, Anyer, Carita.
 - **Bawah (vertical scroll):** Detail rekomendasi berikut gambar, deskripsi singkat, kolom komentar, dan tombol Submit.
 
-> 📸 _Screenshot: `docs/screenshots/main_recommendation.png`_
-
 ---
 
 ### 6. Dashboard Utama — Tab CHALLENGE
@@ -131,8 +115,6 @@ Dua area scroll:
 Layout dua kolom:
 - **Kiri:** Header "New Challenge" dengan deskripsi singkat, diikuti daftar kartu challenge yang dapat digulir.
 - **Kanan:** Panel Leaderboard bergradasi navy-biru dengan peringkat 1 (mahkota emas 👑), 2 (medali perak 🎖), dan 3 (medali perunggu 🎖), beserta nama pengguna, poin, dan label "Points to next rank".
-
-> 📸 _Screenshot: `docs/screenshots/main_challenge.png`_
 
 ---
 
@@ -144,8 +126,6 @@ Jendela terpisah dengan layout HBox dua panel:
 
 Background: gradient `#1a4e6e → #2a9d8f` (biru teal).
 
-> 📸 _Screenshot: `docs/screenshots/challenge_details.png`_
-
 ---
 
 ### 8. Detail Berita
@@ -156,8 +136,6 @@ Jendela popup dengan background gambar laut + overlay gelap. Menampilkan:
 - Isi/deskripsi berita
 - Label nama admin yang memposting (hijau)
 
-> 📸 _Screenshot: `docs/screenshots/news_details.png`_
-
 ---
 
 ### 9. Profil Pengguna
@@ -166,8 +144,6 @@ Popup putih vertikal dengan dua tab:
 - **Tab "Profile":** Username, total poin (biru), tanggal bergabung (abu), field editable: Nama Panggilan, Usia, Email, Instagram, Twitter, Bio. Tombol "Save Changes" (hijau) dan "Logout" (merah).
 - **Tab "Completed Challenges":** Daftar challenge yang sudah diselesaikan oleh pengguna.
 
-> 📸 _Screenshot: `docs/screenshots/user_profile.png`_
-
 ---
 
 ### 10. Admin Panel — Challenge Management
@@ -175,8 +151,6 @@ Popup putih vertikal dengan dua tab:
 Diakses dari tab "ADMIN PANEL" di dashboard. Terdapat dua sub-tab:
 - **Verifikasi Challenge:** Tabel berisi kolom User, Current Points, Challenge, Challenge Points, dan tombol aksi verifikasi. Filter berdasarkan challenge dan pencarian user.
 - **Kelola Challenge:** Split pane — tabel daftar challenge (ID, Title, Points, Tanggal Mulai/Selesai, Actions) dan form detail (Judul, Deskripsi, Poin, Date Picker Mulai/Selesai, URL Poster/Browse).
-
-> 📸 _Screenshot: `docs/screenshots/admin_challenge.png`_
 
 ---
 
@@ -530,21 +504,7 @@ Aplikasi memiliki dua jenis pengguna:
 - **RxJava Async** — Pengambilan data leaderboard dilakukan secara asinkron agar UI tetap responsif.
 - **ZXing QR Code Generator** — Setiap challenge menghasilkan QR code unik untuk sistem verifikasi fisik.
 - **Background Loading** — Aplikasi menggunakan JavaFX `Task` untuk loading awal secara non-blocking (menampilkan progress indicator saat startup).
-
----
-
-## Kontributor
-
-| Nama | GitHub |
-|------|--------|
-| Hiro | [@seipaa](https://github.com/seipaa) |
-
----
-
-## Lisensi
-
-Proyek ini dikembangkan sebagai proyek edukasi. Segala hak dilindungi oleh pengembang.
-
+- 
 ---
 
 <div align="center">
